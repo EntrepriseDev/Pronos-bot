@@ -4,6 +4,7 @@ from telegram.ext import Application, CommandHandler, CallbackContext
 import openai
 import json
 import os
+from flask import Flask, request
 
 # Clé API OpenAI 
 openai.api_key = "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"  # Remplacez par votre clé API
@@ -20,7 +21,7 @@ def save_user_data(user_data):
     with open('user_data.json', 'w') as f:
         json.dump(user_data, f)
 
-# Fonction pour predire le score d'un match via OpenAI
+# Fonction pour prédire le score d'un match via OpenAI
 async def predict_score(update: Update, context: CallbackContext):
     if len(context.args) < 2:
         await update.message.reply_text("Usage: /predire [équipe1] vs [équipe2]")
@@ -121,10 +122,13 @@ logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s
                     level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Fonction principale
+# Flask application
+app = Flask(__name__)
+
+# Fonction principale pour démarrer le serveur et le bot avec Webhook
 def main():
-    """Démarre le bot"""
-    application = Application.builder().token("7935826757:AAFKEABJCDLbm891KDIkVBgR2AaEBkHlK4M").build()
+    """Démarre le bot avec un webhook"""
+    application = Application.builder().token("YOUR_BOT_TOKEN").build()
 
     # Ajouter les gestionnaires de commandes
     application.add_handler(CommandHandler("start", start))
@@ -134,8 +138,15 @@ def main():
     application.add_handler(CommandHandler("reset", reset))
     application.add_handler(CommandHandler("help", help))
 
-    # Lancer le bot
-    application.run_polling()
+    # Définir l'URL du webhook
+    webhook_url = "https://your-server.com/YOUR_BOT_TOKEN"
+
+    # Lancer le webhook
+    application.start_webhook(listen="0.0.0.0", port=10001, url_path="7935826757:AAFKEABJCDLbm891KDIkVBgR2AaEBkHlK4M")
+    application.bot.set_webhook(url=webhook_url)
+
+    # Lancer l'application Flask
+    app.run(host="0.0.0.0", port=5000)
 
 if __name__ == '__main__':
     main()
