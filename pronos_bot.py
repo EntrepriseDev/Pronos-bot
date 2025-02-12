@@ -5,7 +5,7 @@ import openai
 import json
 import os
 
-# Clé API OpenAI
+# Clé API OpenAI 
 openai.api_key = "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"  # Remplacez par votre clé API
 
 # Charger les données des utilisateurs à partir de 'user_data.json'
