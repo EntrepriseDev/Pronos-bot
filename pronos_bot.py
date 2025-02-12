@@ -155,18 +155,25 @@ async def webhook():
 
 # Démarrer le bot et Flask
 def main():
-    load_user_data()
+    load_group_data()
 
     # Ajouter les handlers de commandes
     application.add_handler(CommandHandler("start", start))
     application.add_handler(CommandHandler("help", help_command))
-    application.add_handler(CommandHandler("bet", place_bet))
-    application.add_handler(CommandHandler("predictions", get_predictions))
-    application.add_handler(CommandHandler("bets", show_bets))
+    application.add_handler(CommandHandler("rules", show_rules))
+    application.add_handler(CommandHandler("setrules", add_rules))
+    application.add_handler(CommandHandler("ban", ban_user))
+    application.add_handler(CommandHandler("unban", unban_user))
+    application.add_handler(CommandHandler("warn", warn_user))
+    application.add_handler(CommandHandler("leaderboard", leaderboard))
+    # application.add_handler(CommandHandler("game", start_game))
+    application.add_handler(CommandHandler("score", get_score))
 
     # Définir le webhook
-    webhook_url = f"https://pronos-bot.onrender.com/{TELEGRAM_BOT_TOKEN}"
-    application.bot.set_webhook(url=webhook_url)
+    webhook_url = f"https://pronos-bot.orender.com/{TELEGRAM_BOT_TOKEN}"
+    
+    # Ajouter 'await' devant la fonction asynchrone
+    await application.bot.set_webhook(url=webhook_url)
 
     # Démarrer Flask
     app.run(host="0.0.0.0", port=10000)
