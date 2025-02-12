@@ -1,24 +1,20 @@
 import os
 import logging
 import json
-import asyncio
 from datetime import datetime
 from flask import Flask, request
 from telegram import Update
 from telegram.ext import Application, CommandHandler, CallbackContext
 import openai
-from telegram import Bot
 
 # Configuration du logger
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Token du bot Telegram (via variables d’environnement)
+# Token du bot Telegram
 TELEGRAM_BOT_TOKEN = "7935826757:AAFKEABJCDLbm891KDIkVBgR2AaEBkHlK4M"
-if not TELEGRAM_BOT_TOKEN:
-    raise ValueError("Le token du bot Telegram n'est pas défini !")
 
-# Clé API OpenAI (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)
+# Clé API OpenAI
 openai.api_key = "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"
 
 # Initialisation de l'application Telegram
@@ -139,7 +135,7 @@ def home():
     return "Le bot Telegram est en ligne ! 🚀"
 
 @app.route(f"/{TELEGRAM_BOT_TOKEN}", methods=["POST"])
-async def webhook():
+def webhook():
     """Route du webhook qui traite les mises à jour de Telegram"""
     data = request.get_json()
     logger.info(f"Requête reçue : {json.dumps(data, indent=4)}")
@@ -148,32 +144,24 @@ async def webhook():
         return "Bad Request", 400
 
     update = Update.de_json(data, application.bot)
-    await application.initialize()
-    await application.process_update(update)
+    application.process_update(update)
 
     return "OK", 200
 
 # Démarrer le bot et Flask
 def main():
-    load_group_data()
+    load_user_data()
 
     # Ajouter les handlers de commandes
     application.add_handler(CommandHandler("start", start))
     application.add_handler(CommandHandler("help", help_command))
-    application.add_handler(CommandHandler("rules", show_rules))
-    application.add_handler(CommandHandler("setrules", add_rules))
-    application.add_handler(CommandHandler("ban", ban_user))
-    application.add_handler(CommandHandler("unban", unban_user))
-    application.add_handler(CommandHandler("warn", warn_user))
-    application.add_handler(CommandHandler("leaderboard", leaderboard))
-    # application.add_handler(CommandHandler("game", start_game))
-    application.add_handler(CommandHandler("score", get_score))
+    application.add_handler(CommandHandler("bet", place_bet))
+    application.add_handler(CommandHandler("predictions", get_predictions))
+    application.add_handler(CommandHandler("bets", show_bets))
 
     # Définir le webhook
     webhook_url = f"https://pronos-bot.orender.com/{TELEGRAM_BOT_TOKEN}"
-    
-    # Ajouter 'await' devant la fonction asynchrone
-    await application.bot.set_webhook(url=webhook_url)
+    application.bot.set_webhook(url=webhook_url)
 
     # Démarrer Flask
     app.run(host="0.0.0.0", port=10000)
