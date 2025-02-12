@@ -148,7 +148,7 @@ def webhook():
 
 def set_webhook():
     """Configure le webhook pour le bot Telegram"""
-    webhook_url = f'https://votre-domaine.com/{TELEGRAM_BOT_TOKEN}'
+    webhook_url = f'https://pronos-bot.onrender.com/{TELEGRAM_BOT_TOKEN}'
     url = f'https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/setWebhook?url={webhook_url}'
     response = requests.get(url)
     logger.info(f"Réponse de Telegram : {response.text}")
