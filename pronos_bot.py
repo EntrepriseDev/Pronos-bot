@@ -20,10 +20,10 @@ def save_user_data(user_data):
     with open('user_data.json', 'w') as f:
         json.dump(user_data, f)
 
-# Fonction pour prédire le score d'un match via OpenAI
+# Fonction pour predire le score d'un match via OpenAI
 async def predict_score(update: Update, context: CallbackContext):
     if len(context.args) < 2:
-        await update.message.reply_text("Usage: /prédire [équipe1] vs [équipe2]")
+        await update.message.reply_text("Usage: /predire [équipe1] vs [équipe2]")
         return
 
     team1 = context.args[0]
@@ -56,7 +56,7 @@ async def start(update: Update, context: CallbackContext):
         user_data[user_id] = {'paris': 0}  # Initialisation du solde de paris
         save_user_data(user_data)
     
-    await update.message.reply_text(f"Bienvenue, {update.message.from_user.first_name}! Utilisez /prédire [équipe1] vs [équipe2] pour obtenir une prédiction de score.")
+    await update.message.reply_text(f"Bienvenue, {update.message.from_user.first_name}! Utilisez /predire [équipe1] vs [équipe2] pour obtenir une prédiction de score.")
 
 # Fonction pour gérer les paris
 async def bet(update: Update, context: CallbackContext):
@@ -65,7 +65,7 @@ async def bet(update: Update, context: CallbackContext):
 
     # Vérifier si l'utilisateur a un solde
     if user_id not in user_data or user_data[user_id]['paris'] <= 0:
-        await update.message.reply_text("Vous n'avez pas de paris disponibles. Utilisez /prédire pour faire des prédictions.")
+        await update.message.reply_text("Vous n'avez pas de paris disponibles. Utilisez /predire pour faire des prédictions.")
         return
 
     # Gérer le pari
@@ -110,7 +110,7 @@ async def help(update: Update, context: CallbackContext):
     help_text = """
     Commandes disponibles :
     /start - Démarrer le bot
-    /prédire [équipe1] vs [équipe2] - Obtenez une prédiction de score
+    /predire [équipe1] vs [équipe2] - Obtenez une prédiction de score
     /parier [montant] - Pariez un certain montant sur un match
     /solde - Afficher votre solde de paris
     """
