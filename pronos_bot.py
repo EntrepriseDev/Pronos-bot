@@ -1,9 +1,10 @@
 import os
 import logging
 import json
+import asyncio
 from datetime import datetime
 from flask import Flask, request
-from telegram import Update
+from telegram import Update, Bot
 from telegram.ext import Application, CommandHandler, CallbackContext
 import openai
 
@@ -12,10 +13,12 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 # Token du bot Telegram
-TELEGRAM_BOT_TOKEN = "7935826757:AAFKEABJCDLbm891KDIkVBgR2AaEBkHlK4M"
+TELEGRAM_BOT_TOKEN = "7935826757:AAF..."
+if not TELEGRAM_BOT_TOKEN:
+    raise ValueError("Le token du bot Telegram n'est pas défini !")
 
 # Clé API OpenAI
-openai.api_key = "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"
+openai.api_key = "sk-proj-9l1Ihld..."
 
 # Initialisation de l'application Telegram
 application = Application.builder().token(TELEGRAM_BOT_TOKEN).build()
@@ -51,7 +54,7 @@ async def help_command(update: Update, context: CallbackContext):
     help_text = (
         "/start - Démarrer le bot\n"
         "/help - Voir la liste des commandes\n"
-        "/bet [événement] - Placer un pari sur un événement\n"
+        "/bet [événement] - Placer un pari\n"
         "/predictions [événement] - Obtenir un pronostic\n"
         "/bets - Voir vos paris\n"
     )
@@ -60,72 +63,37 @@ async def help_command(update: Update, context: CallbackContext):
 # Commande /bet
 async def place_bet(update: Update, context: CallbackContext):
     if len(context.args) < 1:
-        await update.message.reply_text("Usage incorrect. Vous devez spécifier un événement après la commande. Exemple : /bet Match de football entre équipe A et équipe B.")
+        await update.message.reply_text("Usage : /bet [événement]")
         return
-
     event = ' '.join(context.args)
-    
-    # Enregistrer le pari de l'utilisateur
     user_id = str(update.message.from_user.id)
-    if user_id not in USER_DATA:
-        USER_DATA[user_id] = {"bets": [], "predictions_today": 0, "last_prediction_date": str(datetime.now().date())}
-
+    USER_DATA.setdefault(user_id, {"bets": [], "predictions_today": 0, "last_prediction_date": str(datetime.now().date())})
     USER_DATA[user_id]["bets"].append({"event": event, "status": "pending"})
     save_user_data()
-
-    await update.message.reply_text(f"Pari sur l'événement '{event}' effectué. Vous pouvez maintenant demander un pronostic avec /predictions.")
+    await update.message.reply_text(f"Pari sur '{event}' enregistré.")
 
 # Commande /predictions
 async def get_predictions(update: Update, context: CallbackContext):
     user_id = str(update.message.from_user.id)
-    if user_id not in USER_DATA:
-        USER_DATA[user_id] = {"bets": [], "predictions_today": 0, "last_prediction_date": str(datetime.now().date())}
-
-    # Vérifier le nombre de prédictions pour aujourd'hui
-    today = str(datetime.now().date())
-    if USER_DATA[user_id]["last_prediction_date"] != today:
-        USER_DATA[user_id]["predictions_today"] = 0  # Reset daily counter
-        USER_DATA[user_id]["last_prediction_date"] = today
-
-    if USER_DATA[user_id]["predictions_today"] >= 15:
-        await update.message.reply_text("Vous avez atteint la limite de 15 prédictions par jour. Pour plus de pronostics, faites une transaction au numéro suivant : +7935826757.")
-        return
-
+    USER_DATA.setdefault(user_id, {"bets": [], "predictions_today": 0, "last_prediction_date": str(datetime.now().date())})
     if len(context.args) < 1:
-        await update.message.reply_text("Usage incorrect. Vous devez spécifier un événement après la commande. Exemple : /predictions Match de football entre équipe A et équipe B.")
+        await update.message.reply_text("Usage : /predictions [événement]")
         return
-
     event = ' '.join(context.args)
-    
-    # Demander un pronostic à OpenAI pour l'événement
-    prompt = f"Fournis un pronostic détaillé pour l'événement suivant : {event}. Que peuvent être les résultats ?"
-    response = openai.Completion.create(
-        engine="text-davinci-003", 
-        prompt=prompt, 
-        max_tokens=100
-    )
-    
+    response = openai.Completion.create(engine="text-davinci-003", prompt=f"Pronostic pour {event}", max_tokens=100)
     prediction = response.choices[0].text.strip()
-
-    # Enregistrer la prédiction
     USER_DATA[user_id]["predictions_today"] += 1
     save_user_data()
-
-    # Répondre à l'utilisateur avec le pronostic
-    await update.message.reply_text(f"Pronostic pour l'événement '{event}':\n{prediction}")
+    await update.message.reply_text(f"Pronostic pour '{event}':\n{prediction}")
 
 # Commande /bets
 async def show_bets(update: Update, context: CallbackContext):
     user_id = str(update.message.from_user.id)
-    if user_id not in USER_DATA or not USER_DATA[user_id]["bets"]:
-        await update.message.reply_text("Vous n'avez pas encore placé de paris. Utilisez la commande /bet pour placer un pari.")
+    if not USER_DATA.get(user_id, {}).get("bets"):
+        await update.message.reply_text("Aucun pari enregistré.")
         return
-
-    bet_text = "Voici vos paris en cours :\n"
-    for bet in USER_DATA[user_id]["bets"]:
-        bet_text += f"Événement : {bet['event']}\nStatut : {bet['status']}\n\n"
-    
-    await update.message.reply_text(bet_text)
+    bets = "\n".join([f"Événement : {bet['event']} | Statut : {bet['status']}" for bet in USER_DATA[user_id]["bets"]])
+    await update.message.reply_text(f"Vos paris :\n{bets}")
 
 # Initialisation de Flask
 app = Flask(__name__)
@@ -135,36 +103,26 @@ def home():
     return "Le bot Telegram est en ligne ! 🚀"
 
 @app.route(f"/{TELEGRAM_BOT_TOKEN}", methods=["POST"])
-def webhook():
-    """Route du webhook qui traite les mises à jour de Telegram"""
+async def webhook():
     data = request.get_json()
     logger.info(f"Requête reçue : {json.dumps(data, indent=4)}")
-
     if not data:
         return "Bad Request", 400
-
     update = Update.de_json(data, application.bot)
-    application.process_update(update)
-
+    await application.process_update(update)
     return "OK", 200
 
 # Démarrer le bot et Flask
-def main():
+async def main():
     load_user_data()
-
-    # Ajouter les handlers de commandes
     application.add_handler(CommandHandler("start", start))
     application.add_handler(CommandHandler("help", help_command))
     application.add_handler(CommandHandler("bet", place_bet))
     application.add_handler(CommandHandler("predictions", get_predictions))
     application.add_handler(CommandHandler("bets", show_bets))
-
-    # Définir le webhook
     webhook_url = f"https://pronos-bot.orender.com/{TELEGRAM_BOT_TOKEN}"
-    application.bot.set_webhook(url=webhook_url)
-
-    # Démarrer Flask
+    await application.bot.set_webhook(url=webhook_url)
     app.run(host="0.0.0.0", port=10000)
 
 if __name__ == "__main__":
-    main()
+    asyncio.run(main())
