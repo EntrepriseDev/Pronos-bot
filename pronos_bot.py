@@ -13,12 +13,12 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 # Token du bot Telegram
-TELEGRAM_BOT_TOKEN = "7935826757:AAF..."
+TELEGRAM_BOT_TOKEN = "7935826757:AAFKEABJCDLbm891KDIkVBgR2AaEBkHlK4M"
 if not TELEGRAM_BOT_TOKEN:
     raise ValueError("Le token du bot Telegram n'est pas défini !")
 
 # Clé API OpenAI
-openai.api_key = "sk-proj-9l1Ihld..."
+openai.api_key = "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"
 
 # Initialisation de l'application Telegram
 application = Application.builder().token(TELEGRAM_BOT_TOKEN).build()
