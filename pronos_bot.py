@@ -165,7 +165,7 @@ def main():
     application.add_handler(CommandHandler("bets", show_bets))
 
     # Définir le webhook
-    webhook_url = f"https://ton-domaine-sur-render.com/{TELEGRAM_BOT_TOKEN}"
+    webhook_url = f"https://pronos-bot.onrender.com/{TELEGRAM_BOT_TOKEN}"
     application.bot.set_webhook(url=webhook_url)
 
     # Démarrer Flask
