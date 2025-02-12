@@ -133,41 +133,10 @@ def home():
 
 @app.route(f"/{TELEGRAM_BOT_TOKEN}", methods=["POST"])
 def webhook():
-    """Route du webhook qui reçoit les mises à jour de Telegram"""
-    try:
-        data = request.get_json()
-        logger.info(f"📥 Requête reçue : {json.dumps(data, indent=4)}")
-
-        if not data:
-            return "Bad Request", 400
-
-        update = Update.de_json(data, application.bot)
-        application.process_update(update)  # 🚀 Exécuter de manière synchrone
-        return "OK", 200
-
-    except Exception as e:
-        logger.error(f"Erreur webhook : {e}")
-        return "Internal Server Error", 500
-
-# ===========================
-# 🔹 Démarrer le bot et Flask
-# ===========================
-def main():
-    load_user_data()
-
-    # 🔹 Ajouter les handlers de commandes
-    application.add_handler(CommandHandler("start", start))
-    application.add_handler(CommandHandler("help", help_command))
-    application.add_handler(CommandHandler("bet", place_bet))
-    application.add_handler(CommandHandler("predictions", get_predictions))
-    application.add_handler(CommandHandler("bets", show_bets))
-
-    # 🔹 Définir le webhook
-    webhook_url = f"https://pronos-bot.orender.com/{TELEGRAM_BOT_TOKEN}"
-    application.bot.set_webhook(url=webhook_url)
-
-    # 🔹 Démarrer Flask
-    app.run(host="0.0.0.0", port=10000)
+    data = request.get_json()
+    update = Update.de_json(data, application.bot)
+    application.process_update(update)
+    return "OK", 200
 
 if __name__ == "__main__":
-    main()
+    app.run(host="0.0.0.0", port=10000)
