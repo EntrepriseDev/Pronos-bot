@@ -6,18 +6,21 @@ from flask import Flask, request
 from telegram import Update
 from telegram.ext import Application, CommandHandler, CallbackContext
 import openai
+import requests
 
 # 🔹 Configuration du logger
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 # 🔹 Token du bot Telegram (via variables d’environnement)
-TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "7935826757:AAFKEABJCDLbm891KDIkVBgR2AaEBkHlK4M")
+TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "votre_token_bot_telegram")
 if not TELEGRAM_BOT_TOKEN:
     raise ValueError("Le token du bot Telegram n'est pas défini !")
 
 # 🔹 Clé API OpenAI (Remplace avec ton propre token)
-openai.api_key = os.getenv("OPENAI_API_KEY", "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")
+openai.api_key = os.getenv("OPENAI_API_KEY", "votre_clé_api_openai")
+if not openai.api_key:
+    raise ValueError("La clé API OpenAI n'est pas définie !")
 
 # 🔹 Initialisation du bot Telegram
 application = Application.builder().token(TELEGRAM_BOT_TOKEN).build()
@@ -99,11 +102,15 @@ async def get_predictions(update: Update, context: CallbackContext):
 
     # 🔹 Obtenir un pronostic depuis OpenAI
     prompt = f"Donne un pronostic détaillé pour : {event}"
-    response = openai.Completion.create(
-        engine="text-davinci-003", prompt=prompt, max_tokens=100
-    )
-    
-    prediction = response.choices[0].text.strip()
+    try:
+        response = openai.Completion.create(
+            engine="text-davinci-003", prompt=prompt, max_tokens=100
+        )
+        prediction = response.choices[0].text.strip()
+    except Exception as e:
+        logger.error(f"Erreur lors de la demande à OpenAI: {e}")
+        await update.message.reply_text("Désolé, une erreur s'est produite lors de la génération du pronostic.")
+        return
 
     USER_DATA[user_id]["predictions_today"] += 1
     save_user_data()
@@ -134,9 +141,24 @@ def home():
 @app.route(f"/{TELEGRAM_BOT_TOKEN}", methods=["POST"])
 def webhook():
     data = request.get_json()
+    logger.info(f"Reçu une mise à jour : {data}")
     update = Update.de_json(data, application.bot)
     application.process_update(update)
     return "OK", 200
 
+def set_webhook():
+    """Configure le webhook pour le bot Telegram"""
+    webhook_url = f'https://votre-domaine.com/{TELEGRAM_BOT_TOKEN}'
+    url = f'https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/setWebhook?url={webhook_url}'
+    response = requests.get(url)
+    logger.info(f"Réponse de Telegram : {response.text}")
+
 if __name__ == "__main__":
+    # Définir le webhook
+    set_webhook()
+    
+    # Charger les données utilisateur
+    load_user_data()
+    
+    # Lancer Flask
     app.run(host="0.0.0.0", port=10000)
