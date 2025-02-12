@@ -13,24 +13,24 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 # 🔹 Token du bot Telegram (via variables d’environnement)
-TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "votre_token_bot_telegram")
+TELEGRAM_BOT_TOKEN = "7935826757:AAFKEABJCDLbm891KDIkVBgR2AaEBkHlK4M"
 if not TELEGRAM_BOT_TOKEN:
     raise ValueError("Le token du bot Telegram n'est pas défini !")
 
-# 🔹 Clé API OpenAI (Remplace avec ton propre token)
-openai.api_key = os.getenv("OPENAI_API_KEY", "votre_clé_api_openai")
+# 🔹 Clé API OpenAI
+openai.api_key = "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"
 if not openai.api_key:
     raise ValueError("La clé API OpenAI n'est pas définie !")
 
-# 🔹 Initialisation du bot Telegram
+# 🔹 Initialisation de l'application Telegram
 application = Application.builder().token(TELEGRAM_BOT_TOKEN).build()
 
-# 🔹 Base de données JSON
+# 🔹 Base de données JSON pour stocker les utilisateurs et leurs paris
 USER_DATA_FILE = "user_data.json"
 USER_DATA = {}
 
+# 🔹 Charger les données des utilisateurs
 def load_user_data():
-    """Charger les données des utilisateurs"""
     global USER_DATA
     try:
         with open(USER_DATA_FILE, 'r') as f:
@@ -38,8 +38,8 @@ def load_user_data():
     except FileNotFoundError:
         USER_DATA = {}
 
+# 🔹 Sauvegarder les données des utilisateurs
 def save_user_data():
-    """Sauvegarder les données utilisateurs"""
     try:
         with open(USER_DATA_FILE, 'w') as f:
             json.dump(USER_DATA, f, indent=4)
@@ -147,7 +147,7 @@ def webhook():
     return "OK", 200
 
 def set_webhook():
-    """Configure le webhook pour le bot Telegram"""
+    """Configurer le webhook pour le bot Telegram"""
     webhook_url = f'https://pronos-bot.onrender.com/{TELEGRAM_BOT_TOKEN}'
     url = f'https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/setWebhook?url={webhook_url}'
     response = requests.get(url)
