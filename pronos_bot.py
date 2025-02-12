@@ -128,7 +128,7 @@ def main():
 
     # Ajouter les gestionnaires de commandes
     application.add_handler(CommandHandler("start", start))
-    application.add_handler(CommandHandler("prédire", predict_score))
+    application.add_handler(CommandHandler("predire", predict_score))
     application.add_handler(CommandHandler("parier", bet))
     application.add_handler(CommandHandler("solde", balance))
     application.add_handler(CommandHandler("reset", reset))
