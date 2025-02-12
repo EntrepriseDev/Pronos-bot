@@ -142,7 +142,7 @@ def main():
     webhook_url = "https://your-server.com/YOUR_BOT_TOKEN"
 
     # Lancer le webhook
-    application.start_webhook(listen="0.0.0.0", port=10001, url_path="7935826757:AAFKEABJCDLbm891KDIkVBgR2AaEBkHlK4M")
+    application.start_webhook(listen="0.0.0.0", port=10000, url_path="7935826757:AAFKEABJCDLbm891KDIkVBgR2AaEBkHlK4M")
     application.bot.set_webhook(url=webhook_url)
 
     # Lancer l'application Flask
