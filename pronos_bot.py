@@ -60,7 +60,7 @@ async def predict_score(update: Update, context: CallbackContext):
     try:
         # Appel à Cohere pour générer une prédiction
         response = co.generate(
-            model="xlarge",  # Tu peux utiliser d'autres modèles disponibles selon ton besoin
+            model="command-r-plus",  # Utilisation du modèle de Cohere
             prompt=prompt,
             max_tokens=50
         )
