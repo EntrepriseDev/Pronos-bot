@@ -60,8 +60,8 @@ async def predict_score(update: Update, context: CallbackContext):
 
     try:
         # Appel à GPT-4 pour générer une prédiction
-        response = openai.chat_completions.create(
-            model="gpt-4",
+        response = openai.ChatCompletion.create(
+            model="gpt-4",  # Utilisation de GPT-4
             messages=[
                 {
                     "role": "user",
