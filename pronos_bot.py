@@ -1,7 +1,7 @@
 import logging
 import os
 import json
-import openai
+import cohere
 from flask import Flask, request
 from telegram import Update
 from telegram.ext import (
@@ -10,10 +10,10 @@ from telegram.ext import (
 
 # ⚠️ Charger les clés API depuis les variables d'environnement
 TELEGRAM_BOT_TOKEN = "7935826757:AAFKEABJCDLbm891KDIkVBgR2AaEBkHlK4M"
-OPENAI_API_KEY = "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"
+COHERE_API_KEY = "k2ABqtBhbtmB5wORCdyXpVDRKyG19m69zMQUXgWq"  # Remplace par ta clé API Cohere
 WEBHOOK_URL = "https://pronos-bot.onrender.com"  # Remplace par ton URL Render
 
-openai.api_key = OPENAI_API_KEY
+co = cohere.Client(COHERE_API_KEY)
 
 # Fichier de stockage des utilisateurs
 USER_DATA_FILE = "user_data.json"
@@ -58,23 +58,19 @@ async def predict_score(update: Update, context: CallbackContext):
     prompt = f"Prédisez le score final pour {team1} vs {team2}. Score :"
 
     try:
-        response = openai.ChatCompletion.create(
-            model="gpt-4",
-            messages=[{"role": "user", "content": prompt}],
+        # Appel à Cohere pour générer une prédiction
+        response = co.generate(
+            model="xlarge",  # Tu peux utiliser d'autres modèles disponibles selon ton besoin
+            prompt=prompt,
             max_tokens=50
         )
-        prediction = response["choices"][0]["message"]["content"].strip()
+        
+        prediction = response.generations[0].text.strip()
         await update.message.reply_text(f"🔮 Prédiction : {prediction}")
 
-    except openai.OpenAIError as e:
-        logger.error(f"Erreur OpenAI : {e}")
-        await update.message.reply_text("❌ Erreur OpenAI. Vérifie ta clé API et ton solde OpenAI.")
-
     except Exception as e:
-        logger.error(f"Erreur inattendue : {e}")
-        await update.message.reply_text("❌ Une erreur inconnue s'est produite.")
-
-
+        logger.error(f"Erreur Cohere : {e}")
+        await update.message.reply_text("❌ Une erreur s'est produite avec Cohere.")
 
 # Commande /solde
 async def balance(update: Update, context: CallbackContext):
