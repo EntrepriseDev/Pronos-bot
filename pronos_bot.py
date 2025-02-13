@@ -128,7 +128,7 @@ app = Flask(__name__)
 # Fonction principale pour démarrer le serveur et le bot avec Webhook
 def main():
     """Démarre le bot avec un webhook"""
-    application = Application.builder().token("YOUR_BOT_TOKEN").build()
+    application = Application.builder().token("7935826757:AAFKEABJCDLbm891KDIkVBgR2AaEBkHlK4M").build()
 
     # Ajouter les gestionnaires de commandes
     application.add_handler(CommandHandler("start", start))
