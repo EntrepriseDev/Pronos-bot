@@ -1,7 +1,7 @@
 import logging
 import os
 import json
-import cohere
+import openai
 from flask import Flask, request
 from telegram import Update
 from telegram.ext import (
@@ -10,10 +10,11 @@ from telegram.ext import (
 
 # ⚠️ Charger les clés API depuis les variables d'environnement
 TELEGRAM_BOT_TOKEN = "7935826757:AAFKEABJCDLbm891KDIkVBgR2AaEBkHlK4M"
-COHERE_API_KEY = "k2ABqtBhbtmB5wORCdyXpVDRKyG19m69zMQUXgWq"  # Remplace par ta clé API Cohere
+OPENAI_API_KEY = "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"  # Remplace par ta clé API OpenAI
 WEBHOOK_URL = "https://pronos-bot.onrender.com"  # Remplace par ton URL Render
 
-co = cohere.Client(COHERE_API_KEY)
+# Initialisation de OpenAI avec ta clé API
+openai.api_key = OPENAI_API_KEY
 
 # Fichier de stockage des utilisateurs
 USER_DATA_FILE = "user_data.json"
@@ -55,22 +56,26 @@ async def predict_score(update: Update, context: CallbackContext):
         return
 
     team1, team2 = context.args[0], context.args[1]
-    prompt = f"Donne-moi une estimation du score final entre apres beaucoup d'analyses {team1} vs {team2}. Score :"
+    prompt = f"Prédisez le score final pour {team1} vs {team2}. Score :"
 
     try:
-        # Appel à Cohere pour générer une prédiction
-        response = co.generate(
-            model="command-r-plus",  # Utilisation du modèle de Cohere
-            prompt=prompt,
-            max_tokens=50
+        # Appel à GPT-4 pour générer une prédiction
+        response = openai.chat_completions.create(
+            model="gpt-4",
+            messages=[
+                {
+                    "role": "user",
+                    "content": prompt,
+                },
+            ],
         )
-        
-        prediction = response.generations[0].text.strip()
+
+        prediction = response['choices'][0]['message']['content'].strip()
         await update.message.reply_text(f"🔮 Prédiction : {prediction}")
 
     except Exception as e:
-        logger.error(f"Erreur Cohere : {e}")
-        await update.message.reply_text("❌ Une erreur s'est produite avec Cohere.")
+        logger.error(f"Erreur OpenAI : {e}")
+        await update.message.reply_text("❌ Une erreur s'est produite avec GPT-4.")
 
 # Commande /solde
 async def balance(update: Update, context: CallbackContext):
