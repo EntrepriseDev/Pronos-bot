@@ -142,12 +142,8 @@ def main():
     webhook_url = "https://pronos-bot.onrender.com/7935826757:AAFKEABJCDLbm891KDIkVBgR2AaEBkHlK4M"
 
     # Lancer le webhook
-    application.run_webhook(
-        listen="0.0.0.0", 
-        port=10000, 
-        url_path="7935826757:AAFKEABJCDLbm891KDIkVBgR2AaEBkHlK4M",
-        webhook_url=webhook_url
-    )
+application.run_polling()
+
 
     # Lancer l'application Flask
     app.run(host="0.0.0.0", port=10000)
