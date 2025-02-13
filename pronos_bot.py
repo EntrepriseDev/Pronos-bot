@@ -58,19 +58,22 @@ async def predict_score(update: Update, context: CallbackContext):
     prompt = f"Prédisez le score final pour {team1} vs {team2}. Score :"
 
     try:
-        response = openai.Completion.create(
-            model="text-davinci-003",
-            prompt=prompt,
+        response = openai.ChatCompletion.create(
+            model="gpt-3.5-turbo",
+            messages=[{"role": "user", "content": prompt}],
             max_tokens=50
         )
-        prediction = response["choices"][0]["text"].strip()
+        prediction = response["choices"][0]["message"]["content"].strip()
         await update.message.reply_text(f"🔮 Prédiction : {prediction}")
-    except openai.error.OpenAIError as e:
+
+    except openai.OpenAIError as e:
         logger.error(f"Erreur OpenAI : {e}")
         await update.message.reply_text("❌ Erreur OpenAI. Vérifie ta clé API et ton solde OpenAI.")
+
     except Exception as e:
         logger.error(f"Erreur inattendue : {e}")
         await update.message.reply_text("❌ Une erreur inconnue s'est produite.")
+
 
 
 # Commande /solde
