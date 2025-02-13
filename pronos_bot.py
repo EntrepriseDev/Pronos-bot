@@ -55,7 +55,7 @@ async def predict_score(update: Update, context: CallbackContext):
         return
 
     team1, team2 = context.args[0], context.args[1]
-    prompt = f"Prédisez le score final pour {team1} vs {team2}. Score :"
+    prompt = f"Donne-moi une estimation du score final entre apres beaucoup d'analyses {team1} vs {team2}. Score :"
 
     try:
         # Appel à Cohere pour générer une prédiction
