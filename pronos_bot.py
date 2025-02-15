@@ -9,8 +9,8 @@ from telegram.ext import (
 )
 
 # ⚠️ Charger les clés API depuis les variables d'environnement
-TELEGRAM_BOT_TOKEN = "TON_TELEGRAM_BOT_TOKEN"
-OPENAI_API_KEY = "TON_OPENAI_API_KEY"
+TELEGRAM_BOT_TOKEN = "7935826757:AAFKEABJCDLbm891KDIkVBgR2AaEBkHlK4M"
+OPENAI_API_KEY = "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"
 WEBHOOK_URL = "https://pronos-bot.onrender.com"
 
 # Fichier de stockage des utilisateurs
