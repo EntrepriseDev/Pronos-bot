@@ -60,7 +60,7 @@ async def predict_score(update: Update, context: CallbackContext):
             "https://api.openai.com/v1/chat/completions",
             headers={"Authorization": f"Bearer {OPENAI_API_KEY}"},
             json={
-                "model": "gpt-4o",
+                "model": "gpt-4o-mini",
                 "messages": [{"role": "user", "content": prompt}]
             }
         )
