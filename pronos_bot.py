@@ -8,7 +8,7 @@ from telegram.ext import Application, CommandHandler, CallbackContext
 
 # ⚠️ Clés API (remplace par tes vraies clés)
 TELEGRAM_BOT_TOKEN = "7935826757:AAFKEABJCDLbm891KDIkVBgR2AaEBkHlK4M"
-CLAUDE_API_KEY = "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"
+CLAUDE_API_KEY = "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"
 WEBHOOK_URL = "https://pronos-bot.onrender.com"  # Remplace par ton URL
 
 # Initialisation du client Claude.ai
