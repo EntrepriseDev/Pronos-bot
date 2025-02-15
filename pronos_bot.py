@@ -10,7 +10,7 @@ from telegram.ext import (
 
 # 🚀 Clés API
 TELEGRAM_BOT_TOKEN = "7935826757:AAFKEABJCDLbm891KDIkVBgR2AaEBkHlK4M"
-OPENAI_API_KEY = "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"
+OPENAI_API_KEY = "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"
 WEBHOOK_URL = "https://pronos-bot.onrender.com"
 
 # 🚀 Configuration Logging
