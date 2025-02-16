@@ -46,7 +46,7 @@ async def start(update: Update, context: CallbackContext):
 
     await update.message.reply_text(
         f"Bienvenue {update.message.from_user.first_name}! 🎉\n"
-        "Utilise /predire [équipe1] vs [équipe2] pour obtenir une prédiction."
+        "Utilise /predire [équipe1] vs [équipe2] pour obtenir une prédiction. \n Exemple: /predire PSG vs City"
     )
 
 # 🔮 Commande /predire (Prédiction de score avec Mistral AI)
