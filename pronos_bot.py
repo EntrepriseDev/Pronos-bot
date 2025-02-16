@@ -85,7 +85,7 @@ async def predict_score(update: Update, context: CallbackContext):
     team1, team2 = match.split(" vs ")
     team1, team2 = team1.strip(), team2.strip()
 
-    prompt = f"Donne un pronostic du score : {team1} vs {team2} au vue de leurs performances 2025"
+    prompt = f"Donne une estimation du score exact: {team1} vs {team2} au vue de plusieurs performances 2025"
 
     headers = {
         "Authorization": f"Bearer {MISTRAL_API_KEY}",
