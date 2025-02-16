@@ -3,12 +3,15 @@ import json
 import logging
 import requests
 from flask import Flask, request
+from dotenv import load_dotenv  # Importation de dotenv
 from telegram import Update
 from telegram.ext import Application, CommandHandler, CallbackContext
 
-# 🔑 Chargement des clés API depuis les variables d'environnement
-TELEGRAM_BOT_TOKEN = "7935826757:AAFKEABJCDLbm891KDIkVBgR2AaEBkHlK4M" # Assure-toi d'avoir stocké cette clé dans ton environnement
-GPT_API_KEY = "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"  # Remplace avec ta clé API OpenAI
+# 🔑 Chargement des variables d'environnement depuis le fichier .env
+load_dotenv()  # Charge les variables d'environnement depuis le fichier .env
+
+TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")  # Assure-toi d'avoir stocké cette clé dans ton fichier .env
+GPT_API_KEY = os.getenv("GPT_API_KEY")  # Charge la clé GPT depuis la variable d'environnement
 WEBHOOK_URL = "https://pronos-bot.onrender.com"
 
 # 📌 Liste des groupes autorisés
