@@ -13,6 +13,12 @@ TELEGRAM_BOT_TOKEN = "7935826757:AAFKEABJCDLbm891KDIkVBgR2AaEBkHlK4M"
 MISTRAL_API_KEY = "fmoYHJAndvZ46SntHcmO8ow7YdNHlcxp"  # Ta clé API Mistral
 WEBHOOK_URL = "https://pronos-bot.onrender.com"  # Remplace par ton URL Render
 
+# Liste des groupes spécifiques où les utilisateurs doivent être
+SPECIFIC_GROUPS = ["groupe_1", "groupe_2"]  # Remplace par les identifiants de tes groupes Telegram
+
+# Identifiants des administrateurs
+ADMIN_IDS = [5427497623, 987654321]  # Remplace par les IDs Telegram des admins
+
 # 🔥 URL de l'API Mistral
 MISTRAL_API_URL = "https://api.mistral.ai/v1/chat/completions"
 
@@ -46,8 +52,26 @@ async def start(update: Update, context: CallbackContext):
         "Utilise /predire [équipe1] vs [équipe2] pour obtenir une prédiction. \n Exemple: /predire PSG vs City"
     )
 
+# 🚨 Vérifier si l'utilisateur est dans les groupes autorisés
+async def check_group_membership(update: Update, context: CallbackContext):
+    user_id = update.message.from_user.id
+    if user_id in ADMIN_IDS:
+        return True  # Les admins peuvent tout faire sans restriction
+
+    # Vérification dans les groupes spécifiques
+    chat_member = await context.bot.get_chat_member(update.message.chat.id, user_id)
+    if chat_member.status in ["member", "administrator"]:
+        return True  # L'utilisateur est membre ou admin du groupe
+
+    return False  # L'utilisateur n'est pas dans un des groupes spécifiés
+
 # 🔮 Commande /predire (Prédiction de score avec Mistral AI)
 async def predict_score(update: Update, context: CallbackContext):
+    # Vérification de l'appartenance à un groupe ou si c'est un admin
+    if not await check_group_membership(update, context):
+        await update.message.reply_text("⚠️ Tu dois être membre d'un groupe autorisé pour utiliser cette commande.")
+        return
+
     if len(context.args) < 1:
         await update.message.reply_text("⚠️ Usage correct : /predire [équipe1] vs [équipe2]")
         return
