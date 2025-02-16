@@ -121,7 +121,7 @@ async def help_command(update: Update, context: CallbackContext):
     help_text = (
         "📌 Commandes disponibles :\n"
         "/start - Démarrer le bot\n"
-        "/predire [équipe1] vs [équipe2] - Prédiction de score\n"
+        "/predire [équipe1] vs [équipe2] - Prédiction de score\n \n Exemple: /predire PSG vs City"
     )
     await update.message.reply_text(help_text)
 
