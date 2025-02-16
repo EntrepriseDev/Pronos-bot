@@ -72,7 +72,7 @@ async def predict_score(update: Update, context: CallbackContext):
         return
 
     team1, team2 = match.split(" vs ")
-    prompt = f"Prédiction de {team1} vs {team2} selon les performances récentes."
+    prompt = f"Estimation du score exact: {team1} vs {team2} selon les performances récentes de 2025."
 
     headers = {"Authorization": f"Bearer {MISTRAL_API_KEY}", "Content-Type": "application/json"}
     data = {"model": "mistral-medium", "messages": [{"role": "user", "content": prompt}], "max_tokens": 500}
