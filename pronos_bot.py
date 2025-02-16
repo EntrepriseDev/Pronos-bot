@@ -2,6 +2,7 @@ import os
 import json
 import logging
 import openai
+import requests
 from flask import Flask, request
 from telegram import Update
 from telegram.ext import Application, CommandHandler, CallbackContext
@@ -73,22 +74,20 @@ async def predict_score(update: Update, context: CallbackContext):
     team1, team2 = match.split(" vs ")
     prompt = f"Prédiction du score pour le match : {team1} vs {team2}"
 
-    # ⚡ Connexion à l'API DeepInfra (via OpenAI)
-    openai.api_key = DEEPINFRA_API_KEY  # Clé API DeepInfra
-    messages = [
-        {"role": "user", "content": prompt}
-    ]
+    # ⚡ Connexion à l'API DeepInfra via HTTP
+    url = "https://api.deepinfra.com/v1/inference/mistralai/Mistral-7B-Instruct-v0.1"
+    headers = {
+        "Authorization": f"Bearer {DEEPINFRA_API_KEY}",
+        "Content-Type": "application/json"
+    }
+    data = {
+        "input": prompt
+    }
     
     try:
-        # Faire la requête POST à DeepInfra via OpenAI
-        response = openai.ChatCompletion.create(
-            model="mistralai/Mistral-7B-Instruct-v0.1",  # Remplace par ton modèle
-            messages=messages,
-            response_format="json",  # Pour obtenir la réponse en JSON
-            tool_choice="auto"
-        )
-        
-        prediction = response['choices'][0]['message']['content'].strip()
+        response = requests.post(url, json=data, headers=headers)
+        response.raise_for_status()
+        prediction = response.json()['results'][0]['generated_text'].strip()
         await update.message.reply_text(f"🔮 Prédiction : {prediction}")
     except Exception as e:
         await update.message.reply_text(f"❌ Erreur avec DeepInfra : {e}")
