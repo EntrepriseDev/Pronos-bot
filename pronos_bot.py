@@ -65,7 +65,7 @@ async def predict_score(update: Update, context: CallbackContext):
     team1, team2 = match.split(" vs ")
     team1, team2 = team1.strip(), team2.strip()
 
-    prompt = f"Donne une estimation du score final de ce match au vue de leurs performances 2024-2025: {team1} vs {team2}. Score :"
+    prompt = f"Donne une estimation du score final de ce match au vue de leurs performances 2024-2025: {team1} vs {team2}"
 
     headers = {
         "Authorization": f"Bearer {MISTRAL_API_KEY}",
@@ -84,13 +84,13 @@ async def predict_score(update: Update, context: CallbackContext):
 
         if response.status_code == 200:
             prediction = response.json()["choices"][0]["message"]["content"].strip()
-            if "vs" in prediction:  # Vérification de la validité de la prédiction
+            if prediction:  # Vérification de la validité de la prédiction
                 await update.message.reply_text(f"🔮 Prédiction : {prediction}")
             else:
                 await update.message.reply_text("❌ Impossible de générer une prédiction claire.")
         else:
             logger.error(f"Erreur avec Mistral AI : {response.status_code} - {response.text}")
-            await update.message.reply_text("❌ Une erreur s'est produite avec Mistral AI.")
+            await update.message.reply_text("❌ Une erreur s'est produite ")
 
     except Exception as e:
         logger.error(f"Erreur avec Mistral AI : {e}")
