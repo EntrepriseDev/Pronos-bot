@@ -64,7 +64,7 @@ async def predict_score(update: Update, context: CallbackContext):
     }
 
     data = {
-        "model": "mistral-large-latest",
+        "model": "open-mistral-nemo",
         "messages": [{"role": "user", "content": prompt}],
         "max_tokens": 256,
         "temperature": 0.7,
