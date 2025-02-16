@@ -51,12 +51,12 @@ async def start(update: Update, context: CallbackContext):
 
 # 🔮 Commande /predire (Prédiction de score avec Mistral AI)
 async def predict_score(update: Update, context: CallbackContext):
-    if len(context.args) < 2:
-        await update.message.reply_text("Usage: /predire [équipe1] vs [équipe2]")
+    if len(context.args) != 2:
+        await update.message.reply_text("⚠️ Usage correct : /predire [équipe1] vs [équipe2]")
         return
 
     team1, team2 = context.args[0], context.args[1]
-    prompt = f"Prédisez le score final pour {team1} vs {team2}. Score :"
+    prompt = f"Donne une estimation finale du score entre ces deux equipes au vue de leurs performances 2025-2024: {team1} vs {team2}. Score :"
 
     headers = {
         "Authorization": f"Bearer {MISTRAL_API_KEY}",
@@ -64,7 +64,7 @@ async def predict_score(update: Update, context: CallbackContext):
     }
 
     data = {
-        "model": "open-mistral-nemo",
+        "model": "pixtral-12b-2409",
         "messages": [{"role": "user", "content": prompt}],
         "max_tokens": 256,
         "temperature": 0.7,
@@ -75,7 +75,10 @@ async def predict_score(update: Update, context: CallbackContext):
 
         if response.status_code == 200:
             prediction = response.json()["choices"][0]["message"]["content"].strip()
-            await update.message.reply_text(f"🔮 Prédiction : {prediction}")
+            if "vs" in prediction:  # Vérification de la validité de la prédiction
+                await update.message.reply_text(f"🔮 Prédiction : {prediction}")
+            else:
+                await update.message.reply_text("❌ Impossible de générer une prédiction claire.")
         else:
             logger.error(f"Erreur avec Mistral AI : {response.status_code} - {response.text}")
             await update.message.reply_text("❌ Une erreur s'est produite avec Mistral AI.")
