@@ -14,7 +14,7 @@ MISTRAL_API_KEY = "fmoYHJAndvZ46SntHcmO8ow7YdNHlcxp"  # Ta clé API Mistral
 WEBHOOK_URL = "https://pronos-bot.onrender.com"  # Remplace par ton URL Render
 
 # Liste des groupes spécifiques où les utilisateurs doivent être
-SPECIFIC_GROUPS = ["groupe_1", "groupe_2"]  # Remplace par les identifiants de tes groupes Telegram
+SPECIFIC_GROUPS = ["@VpnAfricain", "groupe_2"]  # Remplace par les identifiants de tes groupes Telegram
 
 # Identifiants des administrateurs
 ADMIN_IDS = [5427497623, 987654321]  # Remplace par les IDs Telegram des admins
