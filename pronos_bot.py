@@ -93,7 +93,7 @@ async def predict_score(update: Update, context: CallbackContext):
     }
 
     data = {
-        "model": "pixtral-12b-2409",
+        "model": "codestral-latest",
         "messages": [{"role": "user", "content": prompt}],
         "max_tokens": 600,
         "temperature": 0.7,
