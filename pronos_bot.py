@@ -74,23 +74,33 @@ async def predict_score(update: Update, context: CallbackContext):
     team1, team2 = match.split(" vs ")
     prompt = f"Prédiction du score pour le match : {team1} vs {team2}"
 
-    # ⚡ Connexion à l'API DeepInfra via HTTP
-    url = "https://api.deepinfra.com/v1/inference/mistralai/Mistral-7B-Instruct-v0.1"
-    headers = {
-        "Authorization": f"Bearer {DEEPINFRA_API_KEY}",
-        "Content-Type": "application/json"
-    }
-    data = {
-        "input": prompt
-    }
+    # ⚡ Connexion à l'API DeepInfra (via OpenAI)
+    openai.api_key = DEEPINFRA_API_KEY  # Clé API DeepInfra
+    messages = [
+        {"role": "user", "content": prompt}
+    ]
     
     try:
-        response = requests.post(url, json=data, headers=headers)
-        response.raise_for_status()
-        prediction = response.json()['results'][0]['generated_text'].strip()
+        # Faire la requête POST à DeepInfra via OpenAI
+        response = openai.ChatCompletion.create(
+            model="mistralai/Mistral-7B-Instruct-v0.1",  # Remplace par ton modèle
+            messages=messages,
+            response_format="json",  # Pour obtenir la réponse en JSON
+            tool_choice="auto"
+        )
+        
+        # Extraire uniquement la prédiction du score, sans autres informations
+        prediction = response['choices'][0]['message']['content'].strip()
+        
+        # Si la réponse contient des informations supplémentaires non pertinentes
+        # nous essayons de les nettoyer
+        if "Mon score prévisionnel pour ce match est" in prediction:
+            prediction = prediction.split("Mon score prévisionnel pour ce match est")[-1].strip()
+        
         await update.message.reply_text(f"🔮 Prédiction : {prediction}")
     except Exception as e:
         await update.message.reply_text(f"❌ Erreur avec DeepInfra : {e}")
+
 
 # 📊 Commande /stats
 async def stats(update: Update, context: CallbackContext):
