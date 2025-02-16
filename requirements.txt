@@ -1,6 +1,7 @@
 Flask
 python-telegram-bot[webhooks]
 openai==0.28
+python-dotenv
 llamaapi
 cohere
 pydantic
