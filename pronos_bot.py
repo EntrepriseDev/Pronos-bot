@@ -50,13 +50,22 @@ async def start(update: Update, context: CallbackContext):
     )
 
 # 🔮 Commande /predire (Prédiction de score avec Mistral AI)
+# 🔮 Commande /predire (Prédiction de score avec Mistral AI)
 async def predict_score(update: Update, context: CallbackContext):
-    if len(context.args) != 6:
+    if len(context.args) < 1:
         await update.message.reply_text("⚠️ Usage correct : /predire [équipe1] vs [équipe2]")
         return
 
-    team1, team2 = context.args[0], context.args[1]
-    prompt = f"Donne une estimation finale du score entre ces deux equipes au vue de leurs performances 2025-2024: {team1} vs {team2}. Score :"
+    match = " ".join(context.args)  # Joindre tous les arguments en une seule chaîne
+    if "vs" not in match:
+        await update.message.reply_text("⚠️ Utilise le format correct : /predire [équipe1] vs [équipe2]")
+        return
+
+    # Séparer les équipes en fonction de "vs"
+    team1, team2 = match.split(" vs ")
+    team1, team2 = team1.strip(), team2.strip()
+
+    prompt = f"Prédisez le score final pour {team1} vs {team2}. Score :"
 
     headers = {
         "Authorization": f"Bearer {MISTRAL_API_KEY}",
@@ -86,6 +95,7 @@ async def predict_score(update: Update, context: CallbackContext):
     except Exception as e:
         logger.error(f"Erreur avec Mistral AI : {e}")
         await update.message.reply_text("❌ Impossible d'obtenir une réponse.")
+
 
 # 💰 Commande /solde
 async def balance(update: Update, context: CallbackContext):
