@@ -82,7 +82,7 @@ async def predict_score(update: Update, context: CallbackContext):
         "Content-Type": "application/json"
     }
     data = {
-        "model": "gpt-4o",  # Utilisation de GPT-3.5, tu peux choisir un autre modèle comme "gpt-4"
+        "model": "gpt-3.5-turbo",  # Utilisation de GPT-3.5, tu peux choisir un autre modèle comme "gpt-4"
         "messages": [{"role": "user", "content": prompt}],
         "max_tokens": 500
     }
