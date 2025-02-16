@@ -1,20 +1,19 @@
 import os
 import json
 import logging
-import requests
+import openai
 from flask import Flask, request
 from telegram import Update
 from telegram.ext import Application, CommandHandler, CallbackContext
 
 # 🔑 Chargement des clés API depuis les variables d'environnement
 TELEGRAM_BOT_TOKEN = "7935826757:AAFKEABJCDLbm891KDIkVBgR2AaEBkHlK4M"
-MISTRAL_API_KEY = "fmoYHJAndvZ46SntHcmO8ow7YdNHlcxp"
+DEEPINFRA_API_KEY = "udRhI2uR2WhfCsL1iBbpzDP2eRxPEmiV"  # Remplace par ta clé API DeepInfra
 WEBHOOK_URL = "https://pronos-bot.onrender.com"
 
 # 📌 Liste des groupes autorisés
 SPECIFIC_GROUPS = ["@VpnAfricain"]  # Ajoute d'autres groupes ici
 ADMIN_IDS = [5427497623, 987654321]  # Ajoute tes IDs d'admin
-MISTRAL_API_URL = "https://api.mistral.ai/v1/chat/completions"
 
 # 📂 Gestion des fichiers JSON
 def load_user_data():
@@ -72,20 +71,27 @@ async def predict_score(update: Update, context: CallbackContext):
         return
 
     team1, team2 = match.split(" vs ")
-    prompt = f"Estimation du score : {team1} vs {team2} selon les performances récentes de 2025."
+    prompt = f"Prédiction du score pour le match : {team1} vs {team2}"
 
-    headers = {"Authorization": f"Bearer {MISTRAL_API_KEY}", "Content-Type": "application/json"}
-    data = {"model": "mistral-medium", "messages": [{"role": "user", "content": prompt}], "max_tokens": 500}
-
+    # ⚡ Connexion à l'API DeepInfra (via OpenAI)
+    openai.api_key = DEEPINFRA_API_KEY  # Clé API DeepInfra
+    messages = [
+        {"role": "user", "content": prompt}
+    ]
+    
     try:
-        response = requests.post(MISTRAL_API_URL, json=data, headers=headers)
-        if response.status_code == 200:
-            prediction = response.json()["choices"][0]["message"]["content"].strip()
-            await update.message.reply_text(f"🔮 Prédiction : {prediction}")
-        else:
-            await update.message.reply_text("❌ Erreur lors de la prédiction.")
-    except:
-        await update.message.reply_text("❌ Erreur avec Mistral AI.")
+        # Faire la requête POST à DeepInfra via OpenAI
+        response = openai.ChatCompletion.create(
+            model="mistralai/Mistral-7B-Instruct-v0.1",  # Remplace par ton modèle
+            messages=messages,
+            response_format="json",  # Pour obtenir la réponse en JSON
+            tool_choice="auto"
+        )
+        
+        prediction = response['choices'][0]['message']['content'].strip()
+        await update.message.reply_text(f"🔮 Prédiction : {prediction}")
+    except Exception as e:
+        await update.message.reply_text(f"❌ Erreur avec DeepInfra : {e}")
 
 # 📊 Commande /stats
 async def stats(update: Update, context: CallbackContext):
