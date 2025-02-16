@@ -51,7 +51,7 @@ async def start(update: Update, context: CallbackContext):
 
 # 🔮 Commande /predire (Prédiction de score avec Mistral AI)
 async def predict_score(update: Update, context: CallbackContext):
-    if len(context.args) != 2:
+    if len(context.args) != 6:
         await update.message.reply_text("⚠️ Usage correct : /predire [équipe1] vs [équipe2]")
         return
 
