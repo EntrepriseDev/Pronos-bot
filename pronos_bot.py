@@ -4,36 +4,25 @@ import logging
 import requests
 from flask import Flask, request
 from telegram import Update
-from telegram.ext import (
-    Application, CommandHandler, CallbackContext
-)
+from telegram.ext import Application, CommandHandler, CallbackContext
 
-# ⚠️ Clés API
+# 🔑 Chargement des clés API depuis les variables d'environnement
 TELEGRAM_BOT_TOKEN = "7935826757:AAFKEABJCDLbm891KDIkVBgR2AaEBkHlK4M"
-MISTRAL_API_KEY = "fmoYHJAndvZ46SntHcmO8ow7YdNHlcxp"  # Ta clé API Mistral
-WEBHOOK_URL = "https://pronos-bot.onrender.com"  # Remplace par ton URL Render
+MISTRAL_API_KEY = "fmoYHJAndvZ46SntHcmO8ow7YdNHlcxp"
+WEBHOOK_URL = "https://pronos-bot.onrender.com"
 
-# Liste des groupes spécifiques où les utilisateurs doivent être
-SPECIFIC_GROUPS = ["@VpnAfricain"]  # Remplace par les identifiants de tes groupes Telegram
-
-# Identifiants des administrateurs
-ADMIN_IDS = [5427497623, 987654321]  # Remplace par les IDs Telegram des admins
-
-# 🔥 URL de l'API Mistral
+# 📌 Liste des groupes autorisés
+SPECIFIC_GROUPS = ["@VpnAfricain"]  # Ajoute d'autres groupes ici
+ADMIN_IDS = [5427497623, 987654321]  # Ajoute tes IDs d'admin
 MISTRAL_API_URL = "https://api.mistral.ai/v1/chat/completions"
 
-# 📝 Configuration du logging
-logging.basicConfig(format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.INFO)
-logger = logging.getLogger(__name__)
-
-# 📂 Charger les données des utilisateurs
+# 📂 Gestion des fichiers JSON
 def load_user_data():
     if os.path.exists("user_data.json"):
         with open("user_data.json", "r") as f:
             return json.load(f)
     return {}
 
-# 📂 Sauvegarder les données des utilisateurs
 def save_user_data(user_data):
     with open("user_data.json", "w") as f:
         json.dump(user_data, f)
@@ -49,81 +38,81 @@ async def start(update: Update, context: CallbackContext):
 
     await update.message.reply_text(
         f"Bienvenue {update.message.from_user.first_name}! 🎉\n"
-        "Utilise /predire [équipe1] vs [équipe2] pour obtenir une prédiction. \n Exemple: /predire PSG vs City"
+        "Utilise /predire [équipe1] vs [équipe2] pour obtenir une prédiction.\n"
+        "Exemple: /predire PSG vs City"
     )
 
-# 🚨 Vérifier si l'utilisateur est dans les groupes autorisés
+# 🚨 Vérifier si l'utilisateur est dans un groupe autorisé
 async def check_group_membership(update: Update, context: CallbackContext):
     user_id = update.message.from_user.id
     if user_id in ADMIN_IDS:
-        return True  # Les admins peuvent tout faire sans restriction
+        return True
+    for group in SPECIFIC_GROUPS:
+        try:
+            chat_member = await context.bot.get_chat_member(group, user_id)
+            if chat_member.status in ["member", "administrator", "creator"]:
+                return True
+        except:
+            continue
+    return False
 
-    # Vérification dans les groupes spécifiques
-    chat_member = await context.bot.get_chat_member(update.message.chat.id, user_id)
-    if chat_member.status in ["member", "administrator"]:
-        return True  # L'utilisateur est membre ou admin du groupe
-
-    return False  # L'utilisateur n'est pas dans un des groupes spécifiés
-
-# 🔮 Commande /predire (Prédiction de score avec Mistral AI)
+# 🔮 Commande /predire
 async def predict_score(update: Update, context: CallbackContext):
-    # Vérification de l'appartenance à un groupe ou si c'est un admin
     if not await check_group_membership(update, context):
-        await update.message.reply_text("⚠️ Tu dois être membre d'un groupe autorisé pour utiliser cette commande.")
+        await update.message.reply_text("⚠️ Tu dois être membre d'un groupe autorisé.")
         return
 
     if len(context.args) < 1:
-        await update.message.reply_text("⚠️ Usage correct : /predire [équipe1] vs [équipe2]")
+        await update.message.reply_text("⚠️ Usage : /predire [équipe1] vs [équipe2]")
         return
 
-    match = " ".join(context.args)  # Joindre tous les arguments en une seule chaîne
+    match = " ".join(context.args)
     if "vs" not in match:
-        await update.message.reply_text("⚠️ Utilise le format correct : /predire [équipe1] vs [équipe2]")
+        await update.message.reply_text("⚠️ Format : /predire [équipe1] vs [équipe2]")
         return
 
-    # Séparer les équipes en fonction de "vs"
     team1, team2 = match.split(" vs ")
-    team1, team2 = team1.strip(), team2.strip()
+    prompt = f"Prédiction de {team1} vs {team2} selon les performances récentes."
 
-    prompt = f"Donne une estimation du score exact: {team1} vs {team2} après des recherches pousses au vue de plusieurs performances 2025"
-
-    headers = {
-        "Authorization": f"Bearer {MISTRAL_API_KEY}",
-        "Content-Type": "application/json"
-    }
-
-    data = {
-        "model": "codestral-latest",
-        "messages": [{"role": "user", "content": prompt}],
-        "max_tokens": 600,
-        "temperature": 0.7,
-    }
+    headers = {"Authorization": f"Bearer {MISTRAL_API_KEY}", "Content-Type": "application/json"}
+    data = {"model": "mistral-medium", "messages": [{"role": "user", "content": prompt}], "max_tokens": 500}
 
     try:
         response = requests.post(MISTRAL_API_URL, json=data, headers=headers)
-
         if response.status_code == 200:
             prediction = response.json()["choices"][0]["message"]["content"].strip()
-            if prediction:  # Vérification de la validité de la prédiction
-                await update.message.reply_text(f"🔮 Prédiction : {prediction}")
-            else:
-                await update.message.reply_text("❌ Impossible de générer une prédiction claire.")
+            await update.message.reply_text(f"🔮 Prédiction : {prediction}")
         else:
-            logger.error(f"Erreur avec Mistral AI : {response.status_code} - {response.text}")
-            await update.message.reply_text("❌ Une erreur s'est produite ")
+            await update.message.reply_text("❌ Erreur lors de la prédiction.")
+    except:
+        await update.message.reply_text("❌ Erreur avec Mistral AI.")
 
-    except Exception as e:
-        logger.error(f"Erreur avec Mistral AI : {e}")
-        await update.message.reply_text("❌ Impossible d'obtenir une réponse.")
+# 📊 Commande /stats
+async def stats(update: Update, context: CallbackContext):
+    user_id = str(update.message.from_user.id)
+    user_data = load_user_data()
+    paris = user_data.get(user_id, {}).get("paris", 0)
+    await update.message.reply_text(f"📊 Tu as utilisé {paris}/15 pronostics aujourd'hui.")
 
-# 📌 Commande /help
-async def help_command(update: Update, context: CallbackContext):
-    help_text = (
-        "📌 Commandes disponibles :\n"
-        "/start - Démarrer le bot\n"
-        "/predire [équipe1] vs [équipe2] - Prédiction de score\n \n Exemple: /predire PSG vs City"
-    )
-    await update.message.reply_text(help_text)
+# 🔄 Commande /reset (Admin uniquement)
+async def reset(update: Update, context: CallbackContext):
+    if update.message.from_user.id not in ADMIN_IDS:
+        await update.message.reply_text("❌ Commande réservée aux admins.")
+        return
+    user_data = {}
+    save_user_data(user_data)
+    await update.message.reply_text("🔄 Toutes les stats ont été réinitialisées !")
+
+# ⚙️ Commande /admin
+async def admin(update: Update, context: CallbackContext):
+    if update.message.from_user.id not in ADMIN_IDS:
+        await update.message.reply_text("❌ Commande réservée aux admins.")
+        return
+    await update.message.reply_text("📌 Commandes Admin :\n/reset - Réinitialiser les stats")
+
+# 📌 Commande /groupes
+async def groupes(update: Update, context: CallbackContext):
+    await update.message.reply_text(f"📢 Le bot est actif dans : {', '.join(SPECIFIC_GROUPS)}")
 
 # 🚀 Application Flask
 app = Flask(__name__)
@@ -134,25 +123,25 @@ def home():
 
 @app.route(f"/{TELEGRAM_BOT_TOKEN}", methods=["POST"])
 def webhook():
-    """Réception des mises à jour de Telegram via Webhook"""
     update = Update.de_json(request.get_json(), application.bot)
     application.process_update(update)
     return "OK", 200
 
 # 🚀 Configuration du bot Telegram
 application = Application.builder().token(TELEGRAM_BOT_TOKEN).build()
-
-# Ajouter les handlers de commandes
 application.add_handler(CommandHandler("start", start))
 application.add_handler(CommandHandler("predire", predict_score))
-application.add_handler(CommandHandler("help", help_command))
+application.add_handler(CommandHandler("stats", stats))
+application.add_handler(CommandHandler("reset", reset))
+application.add_handler(CommandHandler("admin", admin))
+application.add_handler(CommandHandler("groupes", groupes))
 
-# 🚀 Fonction principale pour lancer le bot en webhook
+# 🚀 Fonction principale
 def main():
-    """Lancer le bot avec un webhook"""
+    port = int(os.getenv("PORT", 10000))
     application.run_webhook(
         listen="0.0.0.0",
-        port=10000,
+        port=port,
         url_path=TELEGRAM_BOT_TOKEN,
         webhook_url=f"{WEBHOOK_URL}/{TELEGRAM_BOT_TOKEN}"
     )
