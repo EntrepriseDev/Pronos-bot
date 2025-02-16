@@ -8,7 +8,7 @@ from telegram.ext import Application, CommandHandler, CallbackContext
 
 # 🔑 Chargement des clés API depuis les variables d'environnement
 TELEGRAM_BOT_TOKEN = "7935826757:AAFKEABJCDLbm891KDIkVBgR2AaEBkHlK4M" # Assure-toi d'avoir stocké cette clé dans ton environnement
-GPT_API_KEY = "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"  # Remplace avec ta clé API OpenAI
+GPT_API_KEY = "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"  # Remplace avec ta clé API OpenAI
 WEBHOOK_URL = "https://pronos-bot.onrender.com"
 
 # 📌 Liste des groupes autorisés
