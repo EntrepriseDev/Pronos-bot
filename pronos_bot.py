@@ -65,7 +65,7 @@ async def predict_score(update: Update, context: CallbackContext):
     team1, team2 = match.split(" vs ")
     team1, team2 = team1.strip(), team2.strip()
 
-    prompt = f"Prédisez le score final pour {team1} vs {team2}. Score :"
+    prompt = f"Donne une estimation du score final de ce match au vue de leurs performances 2024-2025: {team1} vs {team2}. Score :"
 
     headers = {
         "Authorization": f"Bearer {MISTRAL_API_KEY}",
@@ -73,7 +73,7 @@ async def predict_score(update: Update, context: CallbackContext):
     }
 
     data = {
-        "model": "pixtral-12b-2409",
+        "model": "mistral-small-latest",
         "messages": [{"role": "user", "content": prompt}],
         "max_tokens": 256,
         "temperature": 0.7,
