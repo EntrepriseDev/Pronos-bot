@@ -4,20 +4,23 @@ import logging
 import requests
 from flask import Flask, request
 from telegram import Update
-from telegram.ext import (
-    Application, CommandHandler, CallbackContext
-)
+from telegram.ext import Application, CommandHandler, CallbackContext
+import openai
+from pydantic import BaseModel
 
 # ⚠️ Clés API
 TELEGRAM_BOT_TOKEN = "7935826757:AAFKEABJCDLbm891KDIkVBgR2AaEBkHlK4M"
-MISTRAL_API_KEY = "fmoYHJAndvZ46SntHcmO8ow7YdNHlcxp"  # Ta clé API Mistral
+FIREWORKS_API_KEY = "fw_3Zk6DAs57KUofw1G7nypwg9D"  # 🔥 Ta clé API Fireworks
 WEBHOOK_URL = "https://pronos-bot.onrender.com"  # Remplace par ton URL Render
 
 # 📂 Fichier de stockage des utilisateurs
 USER_DATA_FILE = "user_data.json"
 
-# 🔥 URL de l'API Mistral
-MISTRAL_API_URL = "https://api.mistral.ai/v1/chat/completions"
+# 🔥 Initialisation du client Fireworks AI
+fireworks_client = openai.OpenAI(
+    base_url="https://api.fireworks.ai/inference/v1",
+    api_key=FIREWORKS_API_KEY,
+)
 
 # 📝 Configuration du logging
 logging.basicConfig(format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.INFO)
@@ -49,53 +52,43 @@ async def start(update: Update, context: CallbackContext):
         "Utilise /predire [équipe1] vs [équipe2] pour obtenir une prédiction. \n Exemple: /predire PSG vs City"
     )
 
-# 🔮 Commande /predire (Prédiction de score avec Mistral AI)
-# 🔮 Commande /predire (Prédiction de score avec Mistral AI)
+# 📌 Définition du schéma de sortie avec Pydantic
+class PredictionResult(BaseModel):
+    score: str
+
+# 🔮 Commande /predire (Prédiction de score avec Fireworks AI)
 async def predict_score(update: Update, context: CallbackContext):
     if len(context.args) < 1:
         await update.message.reply_text("⚠️ Usage correct : /predire [équipe1] vs [équipe2]")
         return
 
-    match = " ".join(context.args)  # Joindre tous les arguments en une seule chaîne
+    match = " ".join(context.args)
     if "vs" not in match:
         await update.message.reply_text("⚠️ Utilise le format correct : /predire [équipe1] vs [équipe2]")
         return
 
-    # Séparer les équipes en fonction de "vs"
     team1, team2 = match.split(" vs ")
     team1, team2 = team1.strip(), team2.strip()
 
-    prompt = f"Donne une estimation du score final de ce match au vue de leurs performances 2024-2025: {team1} vs {team2}"
-
-    headers = {
-        "Authorization": f"Bearer {MISTRAL_API_KEY}",
-        "Content-Type": "application/json"
-    }
-
-    data = {
-        "model": "pixtral-12b-2409",
-        "messages": [{"role": "user", "content": prompt}],
-        "max_tokens": 600,
-        "temperature": 0.7,
-    }
+    prompt = f"Donne une estimation du score final pour le match {team1} vs {team2} en tenant compte de leurs performances en 2024-2025."
 
     try:
-        response = requests.post(MISTRAL_API_URL, json=data, headers=headers)
+        chat_completion = fireworks_client.chat.completions.create(
+            model="accounts/fireworks/models/mixtral-8x7b-instruct",
+            response_format={"type": "json_object", "schema": PredictionResult.model_json_schema()},
+            messages=[{"role": "user", "content": prompt}],
+        )
 
-        if response.status_code == 200:
-            prediction = response.json()["choices"][0]["message"]["content"].strip()
-            if prediction:  # Vérification de la validité de la prédiction
-                await update.message.reply_text(f"🔮 Prédiction : {prediction}")
-            else:
-                await update.message.reply_text("❌ Impossible de générer une prédiction claire.")
+        prediction = chat_completion.choices[0].message.content.strip()
+
+        if prediction:
+            await update.message.reply_text(f"🔮 Prédiction : {prediction}")
         else:
-            logger.error(f"Erreur avec Mistral AI : {response.status_code} - {response.text}")
-            await update.message.reply_text("❌ Une erreur s'est produite ")
+            await update.message.reply_text("❌ Impossible de générer une prédiction claire.")
 
     except Exception as e:
-        logger.error(f"Erreur avec Mistral AI : {e}")
-        await update.message.reply_text("❌ Impossible d'obtenir une réponse.")
-
+        logger.error(f"Erreur avec Fireworks AI : {e}")
+        await update.message.reply_text("❌ Une erreur s'est produite.")
 
 # 💰 Commande /solde
 async def balance(update: Update, context: CallbackContext):
