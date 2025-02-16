@@ -92,12 +92,14 @@ async def predict_score(update: Update, context: CallbackContext):
 
         # Extraire la prédiction de la réponse
         prediction = result['results'][0]['generated_text'].strip()
-        
-        # Si nécessaire, extraire uniquement la partie contenant le score
+
+        # Si la prédiction contient un texte "score prévisionnel", on extrait seulement le score
         if "score prévisionnel" in prediction:
             prediction = prediction.split("score prévisionnel")[-1].strip()
 
-        await update.message.reply_text(f"🔮 Prédiction : {prediction}")
+        # Renvoyer uniquement la prédiction du score
+        await update.message.reply_text(f"{prediction}")
+        
     except requests.exceptions.RequestException as e:
         await update.message.reply_text(f"❌ Erreur avec DeepInfra : {str(e)}")
 
