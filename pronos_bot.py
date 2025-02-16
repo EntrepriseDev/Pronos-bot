@@ -7,14 +7,14 @@ from telegram import Update
 from telegram.ext import Application, CommandHandler, CallbackContext
 
 # 🔑 Chargement des clés API depuis les variables d'environnement
-TELEGRAM_BOT_TOKEN = "7935826757:AAFKEABJCDLbm891KDIkVBgR2AaEBkHlK4M"
-MISTRAL_API_KEY = "fmoYHJAndvZ46SntHcmO8ow7YdNHlcxp"
+TELEGRAM_BOT_TOKEN = "7935826757:AAFKEABJCDLbm891KDIkVBgR2AaEBkHlK4M" # Assure-toi d'avoir stocké cette clé dans ton environnement
+GPT_API_KEY = "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"  # Remplace avec ta clé API OpenAI
 WEBHOOK_URL = "https://pronos-bot.onrender.com"
 
 # 📌 Liste des groupes autorisés
 SPECIFIC_GROUPS = ["@VpnAfricain"]  # Ajoute d'autres groupes ici
 ADMIN_IDS = [5427497623, 987654321]  # Ajoute tes IDs d'admin
-MISTRAL_API_URL = "https://api.mistral.ai/v1/chat/completions"
+GPT_API_URL = "https://api.openai.com/v1/chat/completions"
 
 # 📂 Gestion des fichiers JSON
 def load_user_data():
@@ -72,20 +72,28 @@ async def predict_score(update: Update, context: CallbackContext):
         return
 
     team1, team2 = match.split(" vs ")
-    prompt = f"Prédiction de {team1} vs {team2} selon les performances récentes."
+    prompt = f"Prédiction du match {team1} vs {team2} selon les performances récentes."
 
-    headers = {"Authorization": f"Bearer {MISTRAL_API_KEY}", "Content-Type": "application/json"}
-    data = {"model": "mistral-medium", "messages": [{"role": "user", "content": prompt}], "max_tokens": 500}
+    headers = {
+        "Authorization": f"Bearer {GPT_API_KEY}",
+        "Content-Type": "application/json"
+    }
+    data = {
+        "model": "gpt-3.5-turbo",  # Utilisation de GPT-3.5, tu peux choisir un autre modèle comme "gpt-4"
+        "messages": [{"role": "user", "content": prompt}],
+        "max_tokens": 500
+    }
 
     try:
-        response = requests.post(MISTRAL_API_URL, json=data, headers=headers)
-        if response.status_code == 200:
-            prediction = response.json()["choices"][0]["message"]["content"].strip()
-            await update.message.reply_text(f"🔮 Prédiction : {prediction}")
-        else:
-            await update.message.reply_text("❌ Erreur lors de la prédiction.")
-    except:
-        await update.message.reply_text("❌ Erreur avec Mistral AI.")
+        response = requests.post(GPT_API_URL, json=data, headers=headers)
+        response.raise_for_status()  # Lève une exception en cas d'erreur HTTP
+        prediction = response.json()["choices"][0]["message"]["content"].strip()
+        await update.message.reply_text(f"🔮 Prédiction : {prediction}")
+    except requests.exceptions.RequestException as e:
+        logging.error(f"Erreur API GPT : {e}")
+        await update.message.reply_text("❌ Erreur avec GPT.")
+    except KeyError:
+        await update.message.reply_text("❌ Erreur avec le format de la réponse de GPT.")
 
 # 📊 Commande /stats
 async def stats(update: Update, context: CallbackContext):
