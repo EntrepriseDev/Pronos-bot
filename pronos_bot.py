@@ -1,7 +1,6 @@
 import os
 import json
 import logging
-import openai
 import requests
 from flask import Flask, request
 from telegram import Update
@@ -74,23 +73,33 @@ async def predict_score(update: Update, context: CallbackContext):
     team1, team2 = match.split(" vs ")
     prompt = f"Prédiction du score pour le match : {team1} vs {team2}"
 
-    # ⚡ Connexion à l'API DeepInfra via HTTP
+    # ⚡ Connexion à l'API DeepInfra
     url = "https://api.deepinfra.com/v1/inference/mistralai/Mistral-7B-Instruct-v0.1"
     headers = {
         "Authorization": f"Bearer {DEEPINFRA_API_KEY}",
         "Content-Type": "application/json"
     }
     data = {
-        "input": prompt
+        "input": prompt,
+        "stop": ["<|eot_id|>"]
     }
-    
+
     try:
-        response = requests.post(url, json=data, headers=headers)
-        response.raise_for_status()
-        prediction = response.json()['results'][0]['generated_text'].strip()
+        # Faire la requête POST à DeepInfra
+        response = requests.post(url, headers=headers, json=data)
+        response.raise_for_status()  # Lève une exception pour les erreurs HTTP
+        result = response.json()
+
+        # Extraire la prédiction de la réponse
+        prediction = result['results'][0]['generated_text'].strip()
+        
+        # Si nécessaire, extraire uniquement la partie contenant le score
+        if "score prévisionnel" in prediction:
+            prediction = prediction.split("score prévisionnel")[-1].strip()
+
         await update.message.reply_text(f"🔮 Prédiction : {prediction}")
-    except Exception as e:
-        await update.message.reply_text(f"❌ Erreur avec DeepInfra : {e}")
+    except requests.exceptions.RequestException as e:
+        await update.message.reply_text(f"❌ Erreur avec DeepInfra : {str(e)}")
 
 # 📊 Commande /stats
 async def stats(update: Update, context: CallbackContext):
