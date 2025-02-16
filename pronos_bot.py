@@ -8,12 +8,13 @@ from telegram.ext import Application, CommandHandler, CallbackContext
 
 # 🔑 Chargement des clés API depuis les variables d'environnement
 TELEGRAM_BOT_TOKEN = "7935826757:AAFKEABJCDLbm891KDIkVBgR2AaEBkHlK4M"
-DEEPINFRA_API_KEY = "udRhI2uR2WhfCsL1iBbpzDP2eRxPEmiV"  # Remplace par ta clé API DeepInfra
+MISTRAL_API_KEY = "fmoYHJAndvZ46SntHcmO8ow7YdNHlcxp"
 WEBHOOK_URL = "https://pronos-bot.onrender.com"
 
 # 📌 Liste des groupes autorisés
 SPECIFIC_GROUPS = ["@VpnAfricain"]  # Ajoute d'autres groupes ici
 ADMIN_IDS = [5427497623, 987654321]  # Ajoute tes IDs d'admin
+MISTRAL_API_URL = "https://api.mistral.ai/v1/chat/completions"
 
 # 📂 Gestion des fichiers JSON
 def load_user_data():
@@ -71,37 +72,20 @@ async def predict_score(update: Update, context: CallbackContext):
         return
 
     team1, team2 = match.split(" vs ")
-    prompt = f"Prédiction du score pour le match : {team1} vs {team2}"
+    prompt = f"Prédiction de {team1} vs {team2} selon les performances récentes."
 
-    # ⚡ Connexion à l'API DeepInfra
-    url = "https://api.deepinfra.com/v1/inference/mistralai/Mistral-7B-Instruct-v0.1"
-    headers = {
-        "Authorization": f"Bearer {DEEPINFRA_API_KEY}",
-        "Content-Type": "application/json"
-    }
-    data = {
-        "input": prompt,
-        "stop": ["<|eot_id|>"]
-    }
+    headers = {"Authorization": f"Bearer {MISTRAL_API_KEY}", "Content-Type": "application/json"}
+    data = {"model": "mistral-medium", "messages": [{"role": "user", "content": prompt}], "max_tokens": 500}
 
     try:
-        # Faire la requête POST à DeepInfra
-        response = requests.post(url, headers=headers, json=data)
-        response.raise_for_status()  # Lève une exception pour les erreurs HTTP
-        result = response.json()
-
-        # Extraire la prédiction de la réponse
-        prediction = result['results'][0]['generated_text'].strip()
-
-        # Si la prédiction contient un texte "score prévisionnel", on extrait seulement le score
-        if "score prévisionnel" in prediction:
-            prediction = prediction.split("score prévisionnel")[-1].strip()
-
-        # Renvoyer uniquement la prédiction du score
-        await update.message.reply_text(f"{prediction}")
-        
-    except requests.exceptions.RequestException as e:
-        await update.message.reply_text(f"❌ Erreur avec DeepInfra : {str(e)}")
+        response = requests.post(MISTRAL_API_URL, json=data, headers=headers)
+        if response.status_code == 200:
+            prediction = response.json()["choices"][0]["message"]["content"].strip()
+            await update.message.reply_text(f"🔮 Prédiction : {prediction}")
+        else:
+            await update.message.reply_text("❌ Erreur lors de la prédiction.")
+    except:
+        await update.message.reply_text("❌ Erreur avec Mistral AI.")
 
 # 📊 Commande /stats
 async def stats(update: Update, context: CallbackContext):
