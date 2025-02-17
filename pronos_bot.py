@@ -66,7 +66,7 @@ async def predict_score(update: Update, context: CallbackContext):
         
         # La réponse est sous 'response.generations' qui est une liste d'objets
         if response:
-            prediction = response
+            prediction = response.generations[0].text.strip()
             await update.message.reply_text(f"🔮 Prédiction : {prediction}")
         else:
             await update.message.reply_text("❌ Aucune prédiction générée.")
