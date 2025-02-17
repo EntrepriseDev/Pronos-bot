@@ -144,9 +144,9 @@ async def stats(update: Update, context: CallbackContext):
 async def admin(update: Update, context: CallbackContext):
     user_id = update.message.from_user.id
     if user_id not in ADMINS:
-        await update.message.reply_text("HAHAHA! Tu crois vraiment que tu peux contrôler le chaos ? Accès refusé. 😈")
+        await update.message.reply_text("❌❌❌ HAHAHA! Tu crois vraiment que tu peux contrôler le chaos ? Accès refusé. 😈")
         return
-    await update.message.reply_text("Bienvenue, mon cher administrateur. Le chaos t'attend... Que veux-tu que l'on détruise aujourd'hui ? HAHAHAHA!")
+    await update.message.reply_text("Bienvenue, Oui vous êtes un de mes chers administrateurs. Le chaos nous attends maître 🤡👑 HAHAHAHA!")
 
 # 🃏 Commande /joke (blague du Joker)
 async def joke(update: Update, context: CallbackContext):
