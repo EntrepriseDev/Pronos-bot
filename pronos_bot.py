@@ -123,7 +123,7 @@ async def predict_score(update: Update, context: CallbackContext):
         return
 
     team1, team2 = match.split(" vs ")
-    prompt = f"Imagine que tu es le Joker. Fais une estimation du score final pour {team1} vs {team2} dans le style du Joker."
+    prompt = f"Imagine que tu es le Joker. Fais une estimation du score final pour {team1} vs {team2} en tenant compte des performances de cette annee 2025 dans le style du Joker."
 
     try:
         response = co.chat(model="command-r-plus-08-2024", messages=[{"role": "user", "content": prompt}])
@@ -156,12 +156,12 @@ async def joke(update: Update, context: CallbackContext):
 # 🆘 Commande /help (aide du Joker)
 async def help(update: Update, context: CallbackContext):
     await update.message.reply_text(
-        "Oh, tu veux de l'aide ? C'est amusant, parce que je ne suis pas là pour t'aider... mais bon, voici ce que tu peux faire :\n\n"
+        "🤡📃Oh, tu veux de l'aide ? C'est amusant, parce que je ne suis pas là pour t'aider... mais bon, voici ce que tu peux faire :\n\n"
         "/start - Bienvenue, cher visiteur !\n"
-        "/predire [équipe1] vs [équipe2] - Si tu veux des prédictions... mais qui sait si ça va être vrai ?\n"
-        "/stats - Voir combien de prédictions il te reste... mais tu sais, ça ne changera rien !\n"
-        "/admin - Pour les élus, les contrôleurs du chaos... Si tu as ce privilège !\n"
-        "/joke - Une petite blague pour égayer ta journée... Si tu penses que tu peux encore rire après tout ça !"
+        "/predire [équipe1] vs [équipe2] - Si tu veux des prédictions... \n"
+        "/stats - Voir combien de prédictions il te reste... mais tu sais, tu as 15 prédictions/jrs😈 !\n"
+        "/admin - Pour les élus, les contrôleurs du chaos... Si tu as ce privilège 👑 !\n"
+        "/joke - Une petite blague pour égayer ta journée... Si tu penses que tu peux encore rire après tout ça 🚬!"
     )
 
 # 🚀 Application Flask
