@@ -1,7 +1,6 @@
 import os
 import json
 import logging
-import requests
 import random
 import cohere
 from datetime import datetime
@@ -43,16 +42,12 @@ def save_user_data(user_data):
 def reset_predictions_if_new_day(user_data):
     today = datetime.today().strftime('%Y-%m-%d')
     for user_id, data in user_data.items():
-        # Vérifie si la clé 'last_prediction_date' existe, sinon la crée
-        if "last_prediction_date" not in data:
-            data["last_prediction_date"] = today
-            data["predictions_left"] = 15  # Remet les prédictions à 15 pour un nouveau jour
-        elif data["last_prediction_date"] != today:
-            # Si la date de la dernière prédiction est différente d'aujourd'hui
-            data["last_prediction_date"] = today
+        if data["last_prediction_date"] != today:
             data["predictions_left"] = 15  # Réinitialise les prédictions
+            data["last_prediction_date"] = today  # Met à jour la date
     save_user_data(user_data)
 
+# JOKER JOKES
 JOKER_JOKES = [
     "Pourquoi Batman n'aime pas les blagues ? Parce qu'il n'a pas de parents ! HAHAHA !",
     "Tu veux savoir pourquoi je souris toujours ? Parce que ça rend les gens nerveux...",
@@ -119,6 +114,17 @@ JOKER_JOKES = [
 
 # 🚀 Commande /start
 async def start(update: Update, context: CallbackContext):
+    user_id = str(update.message.from_user.id)
+    user_data = load_user_data()
+
+    # Initialisation des données utilisateur si elles n'existent pas
+    if user_id not in user_data:
+        user_data[user_id] = {
+            "predictions_left": 15,
+            "last_prediction_date": datetime.today().strftime('%Y-%m-%d')
+        }
+        save_user_data(user_data)
+
     await update.message.reply_text(
         f"🤡🚬Ah, tu es là... Enfin. Bienvenue {update.message.from_user.first_name} ! 🎉\n"
         "Tu veux des prédictions ? rejoint moi dans mon équipe pour obtenir certaines offres spéciaux: \n https://t.me/FreeSurf237_Canal_INTECH \n https://t.me/+pmj78cr6mYBhMTM8\n"
@@ -127,7 +133,7 @@ async def start(update: Update, context: CallbackContext):
 
 # 🔮 Commande /predire
 async def predict_score(update: Update, context: CallbackContext):
-    user_id = str(update.message.from_user.id)  # ID de l'utilisateur
+    user_id = str(update.message.from_user.id)
     user_data = load_user_data()
     reset_predictions_if_new_day(user_data)  # Réinitialise si nouveau jour
 
@@ -149,7 +155,6 @@ async def predict_score(update: Update, context: CallbackContext):
     prompt = f"Imagine que tu es le Joker. Fais une estimation du score final en -100mots pour {team1} vs {team2} en tenant compte de leurs performances de cette année 2025 dans le style du Joker."
 
     try:
-        # Appel à Cohere pour générer la prédiction
         response = co.chat(model="command-r-plus-08-2024", messages=[{"role": "user", "content": prompt}])
         prediction = response.message.content[0].text.strip()
         await update.message.reply_text(f"😈 *Le Joker dit* : {prediction}", parse_mode="Markdown")
