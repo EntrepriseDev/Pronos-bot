@@ -64,8 +64,8 @@ async def predict_score(update: Update, context: CallbackContext):
             messages=[{"role": "user", "content": prompt}]
         )
         
-        # La réponse est dans `response.generations[0]['text']`
-        prediction = response.generations[0]['text'].strip()
+        # La réponse est dans `response['generations'][0]['text']`
+        prediction = response['generations'][0]['text'].strip()
         await update.message.reply_text(f"🔮 Prédiction : {prediction}")
     except Exception as e:
         logger.error(f"Erreur avec Cohere : {e}")
