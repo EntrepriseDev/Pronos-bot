@@ -121,15 +121,30 @@ async def start(update: Update, context: CallbackContext):
     )
 
 # 🔮 Commande /predire
+# 🔮 Commande /predire
 async def predict_score(update: Update, context: CallbackContext):
     user_id = str(update.message.from_user.id)
     user_data = load_user_data()
-    reset_predictions_if_new_day(user_data)  # Réinitialise si nouveau jour
+    
+    # Vérifie si l'utilisateur est un admin
+    if user_id in ADMINS:
+        # Si l'utilisateur est un admin, on ne limite pas les prédictions
+        predictions_left = float('inf')  # Pas de limite pour les admins
+    else:
+        # Si l'utilisateur n'est pas admin, vérifie la limite de prédictions
+        predictions_left = user_data.get(user_id, {}).get("predictions_left", 15)
 
-    # Vérifie si l'utilisateur a des prédictions restantes
-    if user_data.get(user_id, {}).get("predictions_left", 15) <= 0:
-        await update.message.reply_text("❌ Tu as atteint ta limite de 15 prédictions pour aujourd'hui ! Reviens demain pour plus de chaos. HAHAHA!")
+    # Si l'utilisateur n'a plus de prédictions restantes
+    if predictions_left <= 0:
+        await update.message.reply_text("⚠️ Tu as atteint la limite de 15 prédictions pour aujourd'hui. Peut-être que tu devrais revenir demain... ou acheter plus de prédictions ! HAHAHA!")
         return
+
+    # Réduit le nombre de prédictions restantes pour l'utilisateur
+    if user_id not in user_data:
+        user_data[user_id] = {"predictions_left": 15}
+    
+    user_data[user_id]["predictions_left"] = predictions_left - 1
+    save_user_data(user_data)
 
     if len(context.args) < 1:
         await update.message.reply_text("⚠️ Quoi, tu veux prédire sans même savoir de quoi tu parles ?! Utilise le format correct : /predire [équipe1] vs [équipe2] ! HAHAHA!")
@@ -141,17 +156,12 @@ async def predict_score(update: Update, context: CallbackContext):
         return
 
     team1, team2 = match.split(" vs ")
-    prompt = f"Imagine que tu es le Joker. Fais une estimation du score final en -100mots pour {team1} vs {team2} en tenant compte de leurs performances de cette année 2025 dans le style du Joker."
+    prompt = f"Imagine que tu es le Joker. Fais une estimation du score final en -100mots pour {team1} vs {team2} en tenant compte de leurs performances de cette annee 2025 dans le style du Joker."
 
     try:
         response = co.chat(model="command-r-plus-08-2024", messages=[{"role": "user", "content": prompt}])
         prediction = response.message.content[0].text.strip()
         await update.message.reply_text(f"😈 *Le Joker dit* : {prediction}", parse_mode="Markdown")
-        
-        # Réduit les prédictions restantes de l'utilisateur
-        user_data[user_id]["predictions_left"] -= 1
-        save_user_data(user_data)
-        
     except Exception as e:
         logger.error(f"Erreur avec Cohere : {e}")
         await update.message.reply_text("❌ Impossible d'obtenir une prédiction. Mais qui s'en soucie ? Le chaos continue !")
