@@ -2,22 +2,21 @@ import os
 import json
 import logging
 import requests
+import cohere
 from flask import Flask, request
 from telegram import Update
-from telegram.ext import (
-    Application, CommandHandler, CallbackContext
-)
+from telegram.ext import Application, CommandHandler, CallbackContext
 
 # ⚠️ Clés API
 TELEGRAM_BOT_TOKEN = "7935826757:AAFKEABJCDLbm891KDIkVBgR2AaEBkHlK4M"
-MISTRAL_API_KEY = "fmoYHJAndvZ46SntHcmO8ow7YdNHlcxp" 
-WEBHOOK_URL = "https://pronos-bot.onrender.com"
+COHERE_API_KEY = "DvcWz4XL4lEKitKJERUfmqx0V5MWDP01AJbfGz37"
+WEBHOOK_URL = "https://ton-webhook-url.com"  # Remplace par ton URL Render
 
 # 📂 Fichier de stockage des utilisateurs
 USER_DATA_FILE = "user_data.json"
 
-# 🔥 URL de l'API Mistral
-MISTRAL_API_URL = "https://api.mistral.ai/v1/chat/completions"
+# 📌 Initialisation de Cohere
+co = cohere.ClientV2(COHERE_API_KEY)
 
 # 📝 Configuration du logging
 logging.basicConfig(format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.INFO)
@@ -39,12 +38,10 @@ def save_user_data(user_data):
 async def start(update: Update, context: CallbackContext):
     await update.message.reply_text(
         f"Bienvenue {update.message.from_user.first_name}! 🎉\n"
-        "Utilise /predire [équipe1] vs [équipe2] pour obtenir une prédiction.\n"
-        "Exemple: /predire PSG vs City\n"
-        "Autres commandes utiles : /stats, /derniers"
+        "Utilise /predire [équipe1] vs [équipe2] pour obtenir une prédiction. \n Exemple: /predire PSG vs City"
     )
 
-# 🔮 Commande /predire (Prédiction de score avec Mistral AI)
+# 🔮 Commande /predire (Prédiction de score avec Cohere)
 async def predict_score(update: Update, context: CallbackContext):
     if len(context.args) < 1:
         await update.message.reply_text("⚠️ Usage correct : /predire [équipe1] vs [équipe2]")
@@ -55,44 +52,22 @@ async def predict_score(update: Update, context: CallbackContext):
         await update.message.reply_text("⚠️ Utilise le format correct : /predire [équipe1] vs [équipe2]")
         return
 
-    team1, team2 = map(str.strip, match.split("vs"))
-    prompt = f"Donne une estimation du score final de ce match en 2024-2025: {team1} vs {team2}"
+    team1, team2 = match.split(" vs ")
+    team1, team2 = team1.strip(), team2.strip()
 
-    headers = {"Authorization": f"Bearer {MISTRAL_API_KEY}", "Content-Type": "application/json"}
-    data = {"model": "pixtral-12b-2409", "messages": [{"role": "user", "content": prompt}], "max_tokens": 600, "temperature": 0.7}
+    prompt = f"Donne une estimation du score final de ce match au vue de leurs performances 2024-2025: {team1} vs {team2}"
 
     try:
-        response = requests.post(MISTRAL_API_URL, json=data, headers=headers)
-        if response.status_code == 200:
-            prediction = response.json()["choices"][0]["message"]["content"].strip()
-            await update.message.reply_text(f"🔮 Prédiction : {prediction}")
-        else:
-            logger.error(f"Erreur API Mistral : {response.status_code} - {response.text}")
-            await update.message.reply_text("❌ Erreur lors de la récupération de la prédiction.")
+        response = co.chat(
+            model="command-r-plus",
+            messages=[{"role": "user", "content": prompt}]
+        )
+        
+        prediction = response.text.strip()
+        await update.message.reply_text(f"🔮 Prédiction : {prediction}")
     except Exception as e:
-        logger.error(f"Erreur API Mistral : {e}")
-        await update.message.reply_text("❌ Impossible d'obtenir une réponse.")
-
-# 📊 Commande /stats (Afficher les statistiques des prédictions)
-async def stats(update: Update, context: CallbackContext):
-    user_data = load_user_data()
-    total_users = len(user_data)
-    total_predictions = sum(len(data.get("predictions", [])) for data in user_data.values())
-    await update.message.reply_text(
-        f"📊 Statistiques du bot :\n"
-        f"👥 Utilisateurs : {total_users}\n"
-        f"🔮 Prédictions générées : {total_predictions}"
-    )
-
-# 🕰️ Commande /derniers (Afficher les dernières prédictions de l'utilisateur)
-async def last_predictions(update: Update, context: CallbackContext):
-    user_id = str(update.message.from_user.id)
-    user_data = load_user_data().get(user_id, {}).get("predictions", [])
-    if not user_data:
-        await update.message.reply_text("🔍 Aucune prédiction trouvée.")
-        return
-    latest = "\n".join(user_data[-5:])  # Dernières 5 prédictions
-    await update.message.reply_text(f"🕰️ Dernières prédictions :\n{latest}")
+        logger.error(f"Erreur avec Cohere : {e}")
+        await update.message.reply_text("❌ Impossible d'obtenir une prédiction.")
 
 # 📌 Commande /help
 async def help_command(update: Update, context: CallbackContext):
@@ -100,16 +75,16 @@ async def help_command(update: Update, context: CallbackContext):
         "📌 Commandes disponibles :\n"
         "/start - Démarrer le bot\n"
         "/predire [équipe1] vs [équipe2] - Prédiction de score\n"
-        "/stats - Afficher les statistiques du bot\n"
-        "/derniers - Voir les dernières prédictions\n"
+        "/help - Afficher cette aide\n"
     )
     await update.message.reply_text(help_text)
 
 # 🚀 Application Flask
 app = Flask(__name__)
+
 @app.route("/", methods=["GET"])
 def home():
-    return "✅ Bot Telegram en cours d'exécution !", 200
+    return "✅ Bot Telegram de pronostics en cours d'exécution !", 200
 
 @app.route(f"/{TELEGRAM_BOT_TOKEN}", methods=["POST"])
 def webhook():
@@ -119,13 +94,13 @@ def webhook():
 
 # 🚀 Configuration du bot Telegram
 application = Application.builder().token(TELEGRAM_BOT_TOKEN).build()
+
+# Ajouter les handlers de commandes
 application.add_handler(CommandHandler("start", start))
 application.add_handler(CommandHandler("predire", predict_score))
-application.add_handler(CommandHandler("stats", stats))
-application.add_handler(CommandHandler("derniers", last_predictions))
 application.add_handler(CommandHandler("help", help_command))
 
-# 🚀 Fonction principale
+# 🚀 Fonction principale pour lancer le bot en webhook
 def main():
     application.run_webhook(
         listen="0.0.0.0",
