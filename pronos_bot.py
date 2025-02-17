@@ -58,11 +58,13 @@ async def predict_score(update: Update, context: CallbackContext):
     prompt = f"Donne une estimation du score final de ce match au vue de leurs performances 2024-2025: {team1} vs {team2}"
 
     try:
+        # Demander la prédiction à Cohere en utilisant le modèle command-r-plus-08-2024
         response = co.chat(
-            model="command-r-plus",
+            model="command-r-plus-08-2024",  # Modèle mis à jour
             messages=[{"role": "user", "content": prompt}]
         )
         
+        # Extraire la réponse
         prediction = response.text.strip()
         await update.message.reply_text(f"🔮 Prédiction : {prediction}")
     except Exception as e:
