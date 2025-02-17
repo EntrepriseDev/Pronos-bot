@@ -106,9 +106,9 @@ JOKER_JOKES = [
 # 🚀 Commande /start
 async def start(update: Update, context: CallbackContext):
     await update.message.reply_text(
-        f"Ah, tu es là... Enfin, un autre pauvre fou perdu dans ce monde pourri. Bienvenue {update.message.from_user.first_name} ! 🎉\n"
-        "Tu veux des prédictions ? /predire [équipe1] vs [équipe2].\n"
-        "Mais pourquoi faire confiance à une prédiction quand le chaos fait toujours son œuvre ? HAHAHA!"
+        f"Ah, tu es là... Enfin. Bienvenue {update.message.from_user.first_name} ! 🎉\n"
+        "Tu veux des prédictions ? rejoint moi dans mon equipe pour obtenir certaines offres spéciaux: \n https://t.me/FreeSurf237_Canal_INTECH \n https://t.me/+pmj78cr6mYBhMTM8\n"
+        "Pour predire: /predire [équipe1] vs [équipe2]."
     )
 
 # 🔮 Commande /predire
