@@ -64,9 +64,9 @@ async def predict_score(update: Update, context: CallbackContext):
             messages=[{"role": "user", "content": prompt}]
         )
         
-        # La réponse est sous 'response.generations' qui est une liste d'objets
-        if response:
-            prediction = response.generations[0].text.strip()
+        # La réponse est dans response.message.content qui est une liste de TextAssistantMessageResponseContentItem
+        if response.message.content:
+            prediction = response.message.content[0].text.strip()  # Accède au texte du premier élément de la liste
             await update.message.reply_text(f"🔮 Prédiction : {prediction}")
         else:
             await update.message.reply_text("❌ Aucune prédiction générée.")
