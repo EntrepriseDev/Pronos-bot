@@ -8,9 +8,9 @@ from telegram import Update
 from telegram.ext import Application, CommandHandler, CallbackContext
 
 # ⚠️ Clés API
-TELEGRAM_BOT_TOKEN = "7935826757:AAFKEABJCDLbm891KDIkVBgR2AaEBkHlK4M"
-COHERE_API_KEY = "DvcWz4XL4lEKitKJERUfmqx0V5MWDP01AJbfGz37"
-WEBHOOK_URL = "https://pronos-bot.onrender.com"  # Remplace par ton URL Render
+TELEGRAM_BOT_TOKEN = ""
+COHERE_API_KEY = ""
+WEBHOOK_URL = ""  # Remplace par ton URL Render
 
 # 📂 Fichier de stockage des utilisateurs
 USER_DATA_FILE = "user_data.json"
