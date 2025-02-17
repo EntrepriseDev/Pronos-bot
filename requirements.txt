@@ -6,6 +6,6 @@ llamaapi
 cohere
 pydantic
 requests
-requests==2.28.2
+anthropic
 werkzeug==2.0.3
 
