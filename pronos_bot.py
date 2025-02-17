@@ -17,7 +17,7 @@ WEBHOOK_URL = "https://pronos-bot.onrender.com"
 USER_DATA_FILE = "user_data.json"
 
 # 🔥 Liste des admins (ajoute les ID Telegram des admins ici)
-ADMINS = {5427497623, 0}
+ADMINS = {5427497623, 904367221}
 
 # 📌 Initialisation de Cohere
 co = cohere.ClientV2(COHERE_API_KEY)
