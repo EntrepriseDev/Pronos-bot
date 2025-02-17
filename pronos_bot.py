@@ -64,9 +64,13 @@ async def predict_score(update: Update, context: CallbackContext):
             messages=[{"role": "user", "content": prompt}]
         )
         
-        # La réponse est dans `response['generations'][0]['text']`
-        prediction = response['generations'][0]['text'].strip()
-        await update.message.reply_text(f"🔮 Prédiction : {prediction}")
+        # La réponse est sous 'response.generations' qui est une liste d'objets
+        if response:
+            prediction = response
+            await update.message.reply_text(f"🔮 Prédiction : {prediction}")
+        else:
+            await update.message.reply_text("❌ Aucune prédiction générée.")
+            
     except Exception as e:
         logger.error(f"Erreur avec Cohere : {e}")
         await update.message.reply_text("❌ Impossible d'obtenir une prédiction.")
