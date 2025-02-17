@@ -157,6 +157,14 @@ async def predict_score(update: Update, context: CallbackContext):
     try:
         response = co.chat(model="command-r-plus-08-2024", messages=[{"role": "user", "content": prompt}])
         prediction = response.message.content[0].text.strip()
+        
+        if not prediction:
+            # Si la prédiction est vide ou mal générée, on ne renvoie pas de message d'erreur
+            logger.error("Prédiction vide générée.")
+            await update.message.reply_text("❌ Impossible d'obtenir une prédiction valide. Le chaos reste imprévisible !")
+            return
+        
+        # Si une prédiction valide a été générée, on l'envoie
         await update.message.reply_text(f"😈 *Le Joker dit* : {prediction}", parse_mode="Markdown")
         
         # Réduit les prédictions restantes de l'utilisateur
