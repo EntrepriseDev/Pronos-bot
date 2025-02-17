@@ -127,7 +127,7 @@ async def start(update: Update, context: CallbackContext):
 
 # 🔮 Commande /predire
 async def predict_score(update: Update, context: CallbackContext):
-    user_id = str(update.message.from_user.id)
+    user_id = str(update.message.from_user.id)  # ID de l'utilisateur
     user_data = load_user_data()
     reset_predictions_if_new_day(user_data)  # Réinitialise si nouveau jour
 
@@ -149,6 +149,7 @@ async def predict_score(update: Update, context: CallbackContext):
     prompt = f"Imagine que tu es le Joker. Fais une estimation du score final en -100mots pour {team1} vs {team2} en tenant compte de leurs performances de cette année 2025 dans le style du Joker."
 
     try:
+        # Appel à Cohere pour générer la prédiction
         response = co.chat(model="command-r-plus-08-2024", messages=[{"role": "user", "content": prompt}])
         prediction = response.message.content[0].text.strip()
         await update.message.reply_text(f"😈 *Le Joker dit* : {prediction}", parse_mode="Markdown")
