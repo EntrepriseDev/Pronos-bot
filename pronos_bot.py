@@ -106,51 +106,63 @@ JOKER_JOKES = [
 # 🚀 Commande /start
 async def start(update: Update, context: CallbackContext):
     await update.message.reply_text(
-        f"Bienvenue {update.message.from_user.first_name}! 🎉\n"
-        "Utilise /predire [équipe1] vs [équipe2] pour obtenir une prédiction.\nExemple: /predire PSG vs City"
+        f"Ah, tu es là... Enfin, un autre pauvre fou perdu dans ce monde pourri. Bienvenue {update.message.from_user.first_name} ! 🎉\n"
+        "Tu veux des prédictions ? /predire [équipe1] vs [équipe2].\n"
+        "Mais pourquoi faire confiance à une prédiction quand le chaos fait toujours son œuvre ? HAHAHA!"
     )
 
 # 🔮 Commande /predire
 async def predict_score(update: Update, context: CallbackContext):
     if len(context.args) < 1:
-        await update.message.reply_text("⚠️ Usage correct : /predire [équipe1] vs [équipe2]")
+        await update.message.reply_text("⚠️ Quoi, tu veux prédire sans même savoir de quoi tu parles ?! Utilise le format correct : /predire [équipe1] vs [équipe2] ! HAHAHA!")
         return
 
     match = " ".join(context.args)
     if "vs" not in match:
-        await update.message.reply_text("⚠️ Utilise le format correct : /predire [équipe1] vs [équipe2]")
+        await update.message.reply_text("⚠️ Le chaos ne suit pas de règles, mais même lui sait que tu dois utiliser le format : /predire [équipe1] vs [équipe2].")
         return
 
     team1, team2 = match.split(" vs ")
-    prompt = f"Donne une estimation du score final de {team1.strip()} vs {team2.strip()}"
+    prompt = f"Imagine que tu es le Joker. Fais une estimation du score final pour {team1} vs {team2} dans le style du Joker."
 
     try:
         response = co.chat(model="command-r-plus-08-2024", messages=[{"role": "user", "content": prompt}])
         prediction = response.message.content[0].text.strip()
-        await update.message.reply_text(f"🔮 Prédiction : {prediction}")
+        await update.message.reply_text(f"😈 *Le Joker dit* : {prediction}", parse_mode="Markdown")
     except Exception as e:
         logger.error(f"Erreur avec Cohere : {e}")
-        await update.message.reply_text("❌ Impossible d'obtenir une prédiction.")
+        await update.message.reply_text("❌ Impossible d'obtenir une prédiction. Mais qui s'en soucie ? Le chaos continue !")
 
 # 📊 Commande /stats
 async def stats(update: Update, context: CallbackContext):
     user_id = str(update.message.from_user.id)
     user_data = load_user_data()
     remaining = user_data.get(user_id, {}).get("predictions_left", 15)
-    await update.message.reply_text(f"🤡 Il te reste {remaining} prédictions aujourd'hui... Ne gâche pas ta chance, HAHAHA!")
+    await update.message.reply_text(f"🤡 Il te reste {remaining} prédictions aujourd'hui... Comme si ça allait vraiment changer quelque chose. N'oublie pas, l'important, c'est de s'amuser avant que tout ne s'effondre ! HAHAHA!")
 
 # 👑 Commande /admin (réservé aux admins)
 async def admin(update: Update, context: CallbackContext):
     user_id = update.message.from_user.id
     if user_id not in ADMINS:
-        await update.message.reply_text("HAHA! Tu crois être un roi ici ? Nope! Accès refusé! 😈")
+        await update.message.reply_text("HAHAHA! Tu crois vraiment que tu peux contrôler le chaos ? Accès refusé. 😈")
         return
-    await update.message.reply_text("Bienvenue dans le repaire du chaos, Ô grand administrateur! Que désires-tu ?")
+    await update.message.reply_text("Bienvenue, mon cher administrateur. Le chaos t'attend... Que veux-tu que l'on détruise aujourd'hui ? HAHAHAHA!")
 
 # 🃏 Commande /joke (blague du Joker)
 async def joke(update: Update, context: CallbackContext):
     joke = random.choice(JOKER_JOKES)
     await update.message.reply_text(f"🤡 {joke}")
+
+# 🆘 Commande /help (aide du Joker)
+async def help(update: Update, context: CallbackContext):
+    await update.message.reply_text(
+        "Oh, tu veux de l'aide ? C'est amusant, parce que je ne suis pas là pour t'aider... mais bon, voici ce que tu peux faire :\n\n"
+        "/start - Bienvenue, cher visiteur !\n"
+        "/predire [équipe1] vs [équipe2] - Si tu veux des prédictions... mais qui sait si ça va être vrai ?\n"
+        "/stats - Voir combien de prédictions il te reste... mais tu sais, ça ne changera rien !\n"
+        "/admin - Pour les élus, les contrôleurs du chaos... Si tu as ce privilège !\n"
+        "/joke - Une petite blague pour égayer ta journée... Si tu penses que tu peux encore rire après tout ça !"
+    )
 
 # 🚀 Application Flask
 app = Flask(__name__)
@@ -172,6 +184,7 @@ application.add_handler(CommandHandler("predire", predict_score))
 application.add_handler(CommandHandler("stats", stats))
 application.add_handler(CommandHandler("admin", admin))
 application.add_handler(CommandHandler("joke", joke))
+application.add_handler(CommandHandler("help", help))
 
 # 🚀 Lancer le bot
 def main():
