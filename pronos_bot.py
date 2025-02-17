@@ -86,7 +86,7 @@ JOKER_JOKES = [
     "Tu veux une anecdote drôle ? J’ai kidnappé un juge hier, et il a crié plus fort que Batman !",
     "Pourquoi la justice est un mensonge ? Parce que c’est moi qui décide du jeu maintenant !",
     "Le crime, c'est comme l’art... Il faut savoir être créatif !",
-    "On me dit psychopathe, mais moi, je préfère le terme "visionnaire" !",
+    "On me dit psychopathe, mais moi, je préfère le terme visionnaire !",
     "Pourquoi les gens ont peur de moi ? Parce qu’ils savent que je ne joue pas avec les mêmes règles qu’eux !",
     "La folie est comme la gravité… Il suffit d’une petite poussée !",
     "Gotham avait besoin d'un héros… Moi, j'ai décidé qu'elle avait besoin d'un monstre !",
