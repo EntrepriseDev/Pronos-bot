@@ -2,6 +2,7 @@ import os
 import json
 import logging
 import requests
+import random
 import cohere
 from flask import Flask, request
 from telegram import Update
@@ -10,11 +11,13 @@ from telegram.ext import Application, CommandHandler, CallbackContext
 # ⚠️ Clés API
 TELEGRAM_BOT_TOKEN = "7935826757:AAFKEABJCDLbm891KDIkVBgR2AaEBkHlK4M"
 COHERE_API_KEY = "DvcWz4XL4lEKitKJERUfmqx0V5MWDP01AJbfGz37"
-WEBHOOK_URL = "https://pronos-bot.onrender.com"  # Remplace par ton URL Render
-ADMIN_ID = 123456789  # Remplace par ton ID Telegram
+WEBHOOK_URL = "https://pronos-bot.onrender.com"
 
 # 📂 Fichier de stockage des utilisateurs
 USER_DATA_FILE = "user_data.json"
+
+# 🔥 Liste des admins (ajoute les ID Telegram des admins ici)
+ADMINS = {5427497623, 0}
 
 # 📌 Initialisation de Cohere
 co = cohere.ClientV2(COHERE_API_KEY)
@@ -35,27 +38,22 @@ def save_user_data(user_data):
     with open(USER_DATA_FILE, "w") as f:
         json.dump(user_data, f)
 
+# 🤡 Blagues du Joker (exemple, peut être amélioré avec IA)
+JOKER_JOKES = [
+    "Pourquoi Batman n'aime pas les blagues ? Parce qu'il n'a pas de parents ! HAHAHA !",
+    "Tu veux savoir pourquoi je souris toujours ? Parce que ça rend les gens nerveux...",
+    "On vit dans une société où le bonheur est un crime, et moi, je suis coupable !",
+]
+
 # 🚀 Commande /start
 async def start(update: Update, context: CallbackContext):
     await update.message.reply_text(
         f"Bienvenue {update.message.from_user.first_name}! 🎉\n"
-        "Utilise /predire [équipe1] vs [équipe2] pour obtenir une prédiction.\n"
-        "Exemple: /predire PSG vs City"
+        "Utilise /predire [équipe1] vs [équipe2] pour obtenir une prédiction.\nExemple: /predire PSG vs City"
     )
 
 # 🔮 Commande /predire
 async def predict_score(update: Update, context: CallbackContext):
-    user_id = update.message.from_user.id
-    user_data = load_user_data()
-    
-    if str(user_id) != str(ADMIN_ID):
-        user_data.setdefault(str(user_id), {"predictions_left": 15})
-        if user_data[str(user_id)]["predictions_left"] <= 0:
-            await update.message.reply_text("😈 Tu n'as plus de prédictions aujourd'hui ! Tu veux parier ta santé mentale ? 😂")
-            return
-        user_data[str(user_id)]["predictions_left"] -= 1
-        save_user_data(user_data)
-    
     if len(context.args) < 1:
         await update.message.reply_text("⚠️ Usage correct : /predire [équipe1] vs [équipe2]")
         return
@@ -66,50 +64,35 @@ async def predict_score(update: Update, context: CallbackContext):
         return
 
     team1, team2 = match.split(" vs ")
-    team1, team2 = team1.strip(), team2.strip()
-
-    prompt = f"Imagine que tu es le Joker. Fais une prédiction du score pour {team1} vs {team2} dans un style chaotique et imprévisible."
+    prompt = f"Donne une estimation du score final de {team1.strip()} vs {team2.strip()}"
 
     try:
-        response = co.chat(
-            model="command-r-plus-08-2024",
-            messages=[{"role": "user", "content": prompt}]
-        )
-        if response.message.content:
-            prediction = response.message.content[0].text.strip()
-            await update.message.reply_text(f"😈 *Le Joker dit* : {prediction}", parse_mode="Markdown")
-        else:
-            await update.message.reply_text("❌ Aucune prédiction générée. Trop de sérieux dans ce monde…")
+        response = co.chat(model="command-r-plus-08-2024", messages=[{"role": "user", "content": prompt}])
+        prediction = response.message.content[0].text.strip()
+        await update.message.reply_text(f"🔮 Prédiction : {prediction}")
     except Exception as e:
         logger.error(f"Erreur avec Cohere : {e}")
-        await update.message.reply_text("❌ Impossible d'obtenir une prédiction. Mais tu peux toujours faire exploser quelque chose ! 💥")
+        await update.message.reply_text("❌ Impossible d'obtenir une prédiction.")
 
 # 📊 Commande /stats
 async def stats(update: Update, context: CallbackContext):
     user_id = str(update.message.from_user.id)
     user_data = load_user_data()
-    predictions_left = user_data.get(user_id, {}).get("predictions_left", 15)
-    await update.message.reply_text(f"😈 Il te reste *{predictions_left}* prédictions aujourd'hui. Fais-en bon usage… ou pas. 😂", parse_mode="Markdown")
+    remaining = user_data.get(user_id, {}).get("predictions_left", 15)
+    await update.message.reply_text(f"🤡 Il te reste {remaining} prédictions aujourd'hui... Ne gâche pas ta chance, HAHAHA!")
 
-# 🎭 Commande admin
+# 👑 Commande /admin (réservé aux admins)
 async def admin(update: Update, context: CallbackContext):
     user_id = update.message.from_user.id
-    if str(user_id) == str(ADMIN_ID):
-        await update.message.reply_text("👑 Bienvenue, Maître du Chaos ! Que voulez-vous faire aujourd'hui ?")
-    else:
-        await update.message.reply_text("❌ Tu crois que tu peux être le Joker ? Tu n'es qu'un clown…")
+    if user_id not in ADMINS:
+        await update.message.reply_text("HAHA! Tu crois être un roi ici ? Nope! Accès refusé! 😈")
+        return
+    await update.message.reply_text("Bienvenue dans le repaire du chaos, Ô grand administrateur! Que désires-tu ?")
 
-# 📌 Commande /help
-async def help_command(update: Update, context: CallbackContext):
-    help_text = (
-        "📌 Commandes disponibles :\n"
-        "/start - Démarrer le bot\n"
-        "/predire [équipe1] vs [équipe2] - Prédiction de score façon Joker\n"
-        "/stats - Voir le nombre de prédictions restantes\n"
-        "/admin - Accès admin (réservé)\n"
-        "/help - Afficher cette aide"
-    )
-    await update.message.reply_text(help_text)
+# 🃏 Commande /joke (blague du Joker)
+async def joke(update: Update, context: CallbackContext):
+    joke = random.choice(JOKER_JOKES)
+    await update.message.reply_text(f"🤡 {joke}")
 
 # 🚀 Application Flask
 app = Flask(__name__)
@@ -126,15 +109,13 @@ def webhook():
 
 # 🚀 Configuration du bot Telegram
 application = Application.builder().token(TELEGRAM_BOT_TOKEN).build()
-
-# Ajouter les handlers de commandes
 application.add_handler(CommandHandler("start", start))
 application.add_handler(CommandHandler("predire", predict_score))
 application.add_handler(CommandHandler("stats", stats))
 application.add_handler(CommandHandler("admin", admin))
-application.add_handler(CommandHandler("help", help_command))
+application.add_handler(CommandHandler("joke", joke))
 
-# 🚀 Fonction principale pour lancer le bot en webhook
+# 🚀 Lancer le bot
 def main():
     application.run_webhook(
         listen="0.0.0.0",
