@@ -123,7 +123,7 @@ async def predict_score(update: Update, context: CallbackContext):
         return
 
     team1, team2 = match.split(" vs ")
-    prompt = f"Imagine que tu es le Joker. Fais une estimation du score final en -100mots pour {team1} vs {team2} en tenant compte de leurs performances de cette annee 2025 dans le style du Joker."
+    prompt = f"Imagine que tu es le Joker. Fais une estimation du score final en -100mots pour {team1} vs {team2} en tenant compte de leurs performances de cette annee 2025 dans le style du Joker sans blaguer avec le score."
 
     try:
         response = co.chat(model="command-r-plus-08-2024", messages=[{"role": "user", "content": prompt}])
