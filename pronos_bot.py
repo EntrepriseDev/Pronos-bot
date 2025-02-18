@@ -61,7 +61,7 @@ async def predict_score(update: Update, context: CallbackContext):
     user_id = str(update.message.from_user.id)
     user_data = get_or_create_user(user_id)
 
-    if user_id not in ADMINS and user_data[user_id]["predictions_left"] <= 0:
+    if int(user_id) not in ADMINS and user_data[user_id]["predictions_left"] <= 0:
         await update.message.reply_text("❌ Plus de prédictions pour aujourd’hui, petit ! Reviens demain, ou deviens admin... HAHAHA!")
         return
 
@@ -90,14 +90,14 @@ async def predict_score(update: Update, context: CallbackContext):
 async def stats(update: Update, context: CallbackContext):
     user_id = str(update.message.from_user.id)
     user_data = get_or_create_user(user_id)
-    remaining = "∞" if user_id in ADMINS else user_data[user_id]["predictions_left"]
+    remaining = "∞" if int(user_id) in ADMINS else user_data[user_id]["predictions_left"]
 
     await update.message.reply_text(f"🤡 Il te reste {remaining} prédictions aujourd’hui... Amuse-toi bien avant que tout ne s'effondre ! HAHAHA!")
 
 # 👑 Commande /admin (réservé aux admins)
 async def admin(update: Update, context: CallbackContext):
     user_id = str(update.message.from_user.id)
-    if user_id not in ADMINS:
+    if int(user_id) not in ADMINS:
         await update.message.reply_text("❌ HAHAHA! Tu crois vraiment que tu peux contrôler le chaos ? Accès refusé. 😈")
         return
     await update.message.reply_text("Bienvenue, maître du chaos ! Tes prédictions sont illimitées ! 🤡👑 HAHAHAHA!")
