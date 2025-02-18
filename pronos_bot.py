@@ -61,7 +61,7 @@ async def predict_score(update: Update, context: CallbackContext):
     user_id = str(update.message.from_user.id)
     user_data = get_or_create_user(user_id)
 
-    if int(user_id) not in ADMINS and user_data[user_id]["predictions_left"] <= 0:
+    if user_id not in ADMINS and user_data[user_id]["predictions_left"] <= 0:
         await update.message.reply_text("❌ Plus de prédictions pour aujourd’hui, petit ! Reviens demain, ou deviens admin... HAHAHA!")
         return
 
@@ -70,7 +70,7 @@ async def predict_score(update: Update, context: CallbackContext):
         return
 
     team1, team2 = context.args[0], context.args[2]
-    prompt = f"Imagine que tu es le Joker. Fais une estimation du score final pour {team1} vs {team2} en tenant compte de leurs performances de 2025 dans le style du Joker."
+    prompt = f"Imagine que tu es le Joker. Fais une estimation du score final en -100mots avec des emojis que utilise le Joker pour {team1} vs {team2} en tenant compte de leurs performances de 2025 dans le style du Joker sans blaguer avec le score qui doit etre bien analyse."
 
     try:
         response = co.chat(model="command-r-plus-08-2024", messages=[{"role": "user", "content": prompt}])
@@ -90,14 +90,14 @@ async def predict_score(update: Update, context: CallbackContext):
 async def stats(update: Update, context: CallbackContext):
     user_id = str(update.message.from_user.id)
     user_data = get_or_create_user(user_id)
-    remaining = "∞" if int(user_id) in ADMINS else user_data[user_id]["predictions_left"]
+    remaining = "∞" if user_id in ADMINS else user_data[user_id]["predictions_left"]
 
     await update.message.reply_text(f"🤡 Il te reste {remaining} prédictions aujourd’hui... Amuse-toi bien avant que tout ne s'effondre ! HAHAHA!")
 
 # 👑 Commande /admin (réservé aux admins)
 async def admin(update: Update, context: CallbackContext):
     user_id = str(update.message.from_user.id)
-    if int(user_id) not in ADMINS:
+    if user_id not in ADMINS:
         await update.message.reply_text("❌ HAHAHA! Tu crois vraiment que tu peux contrôler le chaos ? Accès refusé. 😈")
         return
     await update.message.reply_text("Bienvenue, maître du chaos ! Tes prédictions sont illimitées ! 🤡👑 HAHAHAHA!")
@@ -174,44 +174,33 @@ async def joke(update: Update, context: CallbackContext):
 async def help(update: Update, context: CallbackContext):
     await update.message.reply_text(
         "🤡📃Ah, tu veux de l'aide ? C'est amusant, parce que je ne suis pas là pour ça... mais bon :\n\n"
-        "/start - Présentation du chaos\n"
-        "/predire [équipe1] vs [équipe2] - Demande une prédiction 🎭\n"
-        "/stats - Voir ton nombre de prédictions restantes\n"
-        "/admin - Vérifier si tu es un maître du chaos 👑\n"
-        "/joke - Une blague pour te faire rire... ou pleurer 🚬!"
+        "/start - Présentation du chaos qui t'attend.\n"
+        "/predire [équipe1] vs [équipe2] - Prédiction de score avec des blagues en bonus !\n"
+        "/stats - Vérifie tes prédictions restantes... avant qu'il ne soit trop tard !\n"
+        "/admin - Accès réservé aux maîtres du chaos !\n"
+        "/joke - Une blague du Joker pour te faire rire... ou pleurer.\n"
     )
 
-# 🚀 Application Flask
-app = Flask(__name__)
-
-@app.route("/", methods=["GET"])
-def home():
-    return "✅ Bot Telegram de pronostics en cours d'exécution !", 200
-
-@app.route(f"/{TELEGRAM_BOT_TOKEN}", methods=["POST"])
-def webhook():
-    update = Update.de_json(request.get_json(), application.bot)
-    application.process_update(update)
-    return "OK", 200
-
-# 🚀 Configuration du bot Telegram
-application = Application.builder().token(TELEGRAM_BOT_TOKEN).build()
-application.add_handler(CommandHandler("start", start))
-application.add_handler(CommandHandler("predire", predict_score))
-application.add_handler(CommandHandler("stats", stats))
-application.add_handler(CommandHandler("admin", admin))
-application.add_handler(CommandHandler("joke", joke))
-application.add_handler(CommandHandler("help", help))
-
-# 🚀 Lancer le bot
+# 🛠 Fonction principale
 def main():
-    application.run_webhook(
-        listen="0.0.0.0",
-        port=10000,
-        url_path=TELEGRAM_BOT_TOKEN,
-        webhook_url=f"{WEBHOOK_URL}/{TELEGRAM_BOT_TOKEN}"
-    )
-    app.run(host="0.0.0.0", port=10000)
+    app = Flask(__name__)
 
+    # Définir le webhook Telegram
+    app.route(f"/{TELEGRAM_BOT_TOKEN}", methods=["POST"])(webhook)
+
+    application = Application.builder().token(TELEGRAM_BOT_TOKEN).build()
+
+    # Enregistrer les handlers
+    application.add_handler(CommandHandler("start", start))
+    application.add_handler(CommandHandler("predire", predict_score))
+    application.add_handler(CommandHandler("stats", stats))
+    application.add_handler(CommandHandler("admin", admin))
+    application.add_handler(CommandHandler("joke", joke))
+    application.add_handler(CommandHandler("help", help))
+
+    # Démarrer le bot
+    application.run_polling()
+
+# 🚀 Lancer le serveur
 if __name__ == "__main__":
     main()
