@@ -49,11 +49,12 @@ def get_or_create_user(user_id):
 # 🚀 Commande /start
 async def start(update: Update, context: CallbackContext):
     await update.message.reply_text(
-        f"🤡🚬Ah, tu es là... Enfin. Bienvenue {update.message.from_user.first_name} ! 🎉\n"
+        f"🤡🚬Ah, tu es là... Enfin. Bienvenue ꧁𓊈𒆜{update.message.from_user.first_name}𒆜𓊉꧂ ! 🎉\n"
         "Tu veux des prédictions ? Rejoins-moi dans mon équipe pour des offres spéciales :\n"
-        "https://t.me/FreeSurf237_Canal_INTECH\n"
-        "https://t.me/+pmj78cr6mYBhMTM8\n"
-        "Pour prédire : /predire [équipe1] vs [équipe2]."
+        "[Free Surf INTECH](https://t.me/FreeSurf237_Canal_INTECH) \n"
+        "[JK PRONO 🏆](https://t.me/+pmj78cr6mYBhMTM8) \n"
+        "👁️⃤ Pour prédire : /predire [équipe1] vs [équipe2].", 
+        parse_mode="Markdown"
     )
 
 # 🔮 Commande /predire
@@ -62,7 +63,7 @@ async def predict_score(update: Update, context: CallbackContext):
     user_data = get_or_create_user(user_id)
 
     if int(user_id) not in ADMINS and user_data[user_id]["predictions_left"] <= 0:
-        await update.message.reply_text("❌ Plus de prédictions pour aujourd’hui, petit ! Reviens demain, ou deviens admin... HAHAHA!")
+        await update.message.reply_text("❌ Plus de prédictions pour aujourd’hui, petit ᶠᶸᶜᵏᵧₒᵤ! 😂 \n Reviens demain, ou deviens admin... HAHAHA!")
         return
 
     if len(context.args) < 3 or context.args[1].lower() != "vs":
@@ -100,7 +101,7 @@ async def admin(update: Update, context: CallbackContext):
     if int(user_id) not in ADMINS:
         await update.message.reply_text("❌ HAHAHA! Tu crois vraiment que tu peux contrôler le chaos ? Accès refusé. 😈 \n /̵͇̿̿/'̿'̿ ̿ ̿̿ ̿̿ ̿̿💥")
         return
-    await update.message.reply_text("Bienvenue, maître du chaos ! Tes prédictions sont illimitées ! 🤡👑 HAHAHAHA!")
+    await update.message.reply_text("Bienvenue, maître du chaos ! Tes prédictions sont illimitées ! 🤡👑 HAHAHAHA! \n 「✔ ᵛᵉʳᶦᶠᶦᵉᵈ」")
 
 # 🃏 Commande /joke (blague du Joker)
 JOKER_JOKES = [
@@ -164,7 +165,8 @@ JOKER_JOKES = [
     "Tu veux un secret ? Les monstres ne se cachent pas sous ton lit… Ils dirigent la ville !",
     "Pourquoi j'aime les jeux vidéo ? Parce qu'on peut toujours recommencer après avoir tout détruit !",
     "On dit que la vengeance est un plat qui se mange froid… Moi, je préfère le servir avec une explosion !",
-    "Si la vie est un film, alors moi, je suis le méchant principal !"
+    "Si la vie est un film, alors moi, je suis le méchant principal !",
+    "( -_•)▄︻テحكـ━一💥"
 ]
 
 async def joke(update: Update, context: CallbackContext):
