@@ -53,7 +53,7 @@ async def start(update: Update, context: CallbackContext):
         "Tu veux des prédictions ? Rejoins-moi dans mon équipe pour des offres spéciales :\n"
         "[Free Surf INTECH](https://t.me/FreeSurf237_Canal_INTECH) \n"
         "[JK PRONO 🏆](https://t.me/+pmj78cr6mYBhMTM8) \n"
-        "👁️⃤ Pour prédire : /predire [équipe1] vs [équipe2].", 
+        "👁️Pour prédire : /predire [équipe1] vs [équipe2].", 
         parse_mode="Markdown"
     )
 
@@ -67,7 +67,7 @@ async def predict_score(update: Update, context: CallbackContext):
         return
 
     if len(context.args) < 3 or context.args[1].lower() != "vs":
-        await update.message.reply_text("⚠️ Format incorrect ! Utilise : /predire [équipe1] vs [équipe2].")
+        await update.message.reply_text("🎭 Oh là là ! On dirait que tu as raté le coche, mon petit. 🤡 Tu devrais utiliser : /predire [équipe1] vs [équipe2]. \n \n 🚬C'est comme une blague mal placée, ça ne marche pas sans le bon timing !")
         return
 
     team1, team2 = context.args[0], context.args[2]
@@ -76,7 +76,7 @@ async def predict_score(update: Update, context: CallbackContext):
     try:
         response = co.chat(model="command-r-plus-08-2024", messages=[{"role": "user", "content": prompt}])
         prediction = response.message.content[0].text.strip()
-        await update.message.reply_text(f"[Rejoignez la communauté du Joker 🎭](https://t.me/the_jokers_community) \n \n *Le JOKER🃏 dit* : {prediction}", parse_mode="Markdown")
+        await update.message.reply_text(f"[Rejoignez la communauté du Joker 🎭](https://t.me/the_jokers_community) \n \n *Le Joker dit* 🃏: {prediction}", parse_mode="Markdown")
 
         # Réduction du nombre de pronostics restants pour les non-admins
         if user_id not in ADMINS:
