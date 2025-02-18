@@ -49,10 +49,10 @@ def get_or_create_user(user_id):
 # 🚀 Commande /start
 async def start(update: Update, context: CallbackContext):
     await update.message.reply_text(
-        f"🤡🚬Ah, tu es là... Enfin. Bienvenue ꧁𓊈𒆜{update.message.from_user.first_name}𒆜𓊉꧂ ! 🎉\n"
-        "Tu veux des prédictions ? Rejoins-moi dans mon équipe pour des offres spéciales :\n"
+        f"🤡🚬Ah, tu es là... Enfin. \n \n *Bienvenue ꧁𓊈𒆜{update.message.from_user.first_name}𒆜𓊉꧂* ! 🎉\n"
+        "Tu veux des prédictions ? \n Rejoins-moi dans mon équipe pour des offres spéciales : \n\n"
         "[Free Surf INTECH](https://t.me/FreeSurf237_Canal_INTECH) \n"
-        "[JK PRONO 🏆](https://t.me/+pmj78cr6mYBhMTM8) \n"
+        "[JK PRONO 🏆](https://t.me/+pmj78cr6mYBhMTM8) \n\n"
         "👁️Pour prédire : /predire [équipe1] vs [équipe2].", 
         parse_mode="Markdown"
     )
