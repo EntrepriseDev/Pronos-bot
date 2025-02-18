@@ -128,7 +128,7 @@ async def predict_score(update: Update, context: CallbackContext):
     try:
         response = co.chat(model="command-r-plus-08-2024", messages=[{"role": "user", "content": prompt}])
         prediction = response.message.content[0].text.strip()
-        await update.message.reply_text(f"[Rejoignez la communauté du Joker 🎭](https://t.me/the_jokers_community) \n 😈 *Le Joker dit* : {prediction}", parse_mode="Markdown")
+        await update.message.reply_text(f"[Rejoignez la communauté du Joker 🎭](https://t.me/the_jokers_community) \n \n 😈 *Le Joker dit* : {prediction}", parse_mode="Markdown")
     except Exception as e:
         logger.error(f"Erreur avec Cohere : {e}")
         await update.message.reply_text("❌ Impossible d'obtenir une prédiction. Mais qui s'en soucie ? Le chaos continue !")
