@@ -98,7 +98,32 @@ async def predict_score(update: Update, context: CallbackContext):
     team1_info = get_team_info(team1)
     team2_info = get_team_info(team2)
 
-    prompt = f"Imagine que tu es le Joker. Fais une estimation du score final en -100mots avec des emojis que utilise le Joker pour {team1} vs {team2} en tenant compte de leurs performances de 2025 dans le style du Joker sans blaguer avec le score qui doit etre bien analyse. voici leurs informations sous forme json utilise les: {team1}: {team1_info} et {team2}: {team2_info}"
+    prompt = (
+    f"🎭 Imagine que tu es le Joker. Crée un coupon de pronostics complet pour le match entre ({team1}) et ({team2}). "
+    f"Fais une estimation du score final et présente les informations sous la forme suivante :\n\n"
+    
+    f"🔢 **Nombres de buts :**\n"
+    f"🔹 {team1}: [nombre de buts estimé] ⚽️\n"
+    f"🔹 {team2}: [nombre de buts estimé] ⚽️\n\n"
+    
+    f"💥 **Moins de :** [nombre de buts] (Explique pourquoi le score sera inférieur à ce chiffre)\n\n"
+    
+    f"🧐 **Analyse des performances :**\n"
+    f"🔹 Analyse les performances des deux équipes en 2025 :\n"
+    f"   - Points forts de {team1} : [insérer points forts]\n"
+    f"   - Points faibles de {team1} : [insérer points faibles]\n"
+    f"   - Points forts de {team2} : [insérer points forts]\n"
+    f"   - Points faibles de {team2} : [insérer points faibles]\n\n"
+    
+    f"🌟 **Contexte du match :**\n"
+    f"   - Derniers résultats de {team1}: [insérer résultats récents]\n"
+    f"   - Derniers résultats de {team2}: [insérer résultats récents]\n"
+    
+    f"🎉 **Prédiction finale :**\n"
+    f"   - Score final estimé : {team1} {score_1} - {score_2} {team2} 🎉\n\n"
+    
+    f"🤡 N'oublie pas d'inclure une touche d'humour dans le style du Joker pour rendre tout ça encore plus divertissant !"
+)
 
     # Ajouter les informations d'équipe au prompt si disponibles
     if team1_info:
