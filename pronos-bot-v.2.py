@@ -36,8 +36,75 @@ def load_user_data():
 # 📂 Sauvegarder les données des utilisateurs
 def save_user_data(user_data):
     with open(USER_DATA_FILE, "w") as f:
-        json.dump(user_data, f)
+        json.dump(user_data, f, indent=4)
 
+# 🔄 Initialiser ou mettre à jour les données utilisateur
+def get_or_create_user(user_id):
+    user_data = load_user_data()
+    if user_id not in user_data:
+        user_data[user_id] = {"predictions_left": 15}
+        save_user_data(user_data)
+    return user_data
+
+# 🚀 Commande /start
+async def start(update: Update, context: CallbackContext):
+    await update.message.reply_text(
+        f"🤡🚬Ah, tu es là... Enfin. \n \n *Bienvenue ꧁𓊈𒆜{update.message.from_user.first_name}𒆜𓊉꧂* ! 🎉\n"
+        "Tu veux des prédictions ? \n Rejoins-moi dans mon équipe pour des offres spéciales : \n\n"
+        "[Free Surf INTECH](https://t.me/FreeSurf237_Canal_INTECH) \n"
+        "[1xbet Pronostic/ PariETGagner⚽️ 🔥](https://t.me/PronoScoreExact22) \n"
+        "[JK PRONO 🏆](https://t.me/+pmj78cr6mYBhMTM8) \n\n"
+        "👁️Pour prédire : /predire [équipe1] vs [équipe2].", 
+        parse_mode="Markdown"
+    )
+
+# 🔮 Commande /predire
+async def predict_score(update: Update, context: CallbackContext):
+    user_id = str(update.message.from_user.id)
+    user_data = get_or_create_user(user_id)
+
+    if int(user_id) not in ADMINS and user_data[user_id]["predictions_left"] <= 0:
+        await update.message.reply_text("❌ Plus de prédictions pour aujourd’hui, petit ᶠᶸᶜᵏᵧₒᵤ! 😂 \n Reviens demain, ou deviens admin... HAHAHA!")
+        return
+
+    if len(context.args) < 3 or context.args[1].lower() != "vs":
+        await update.message.reply_text("🎭 Oh là là ! On dirait que tu as raté le coche, mon petit. 🤡 Tu devrais utiliser : /predire [équipe1] vs [équipe2]. \n \n 🚬C'est comme une blague mal placée, ça ne marche pas sans le bon timing !")
+        return
+
+    team1, team2 = context.args[0], context.args[2]
+    prompt = f"Imagine que tu es le Joker. Fais une estimation du score final en -100mots avec des emojis que utilise le Joker pour {team1} vs {team2} en tenant compte de leurs performances de 2025 dans le style du Joker sans blaguer avec le score qui doit etre bien analyse"
+
+    try:
+        response = co.chat(model="command-r-plus-08-2024", messages=[{"role": "user", "content": prompt}])
+        prediction = response.message.content[0].text.strip()
+        await update.message.reply_text(f"[Rejoignez la communauté du Joker 🎭](https://t.me/the_jokers_community) \n \n *Le Joker dit* 🃏: {prediction}", parse_mode="Markdown")
+
+        # Réduction du nombre de pronostics restants pour les non-admins
+        if user_id not in ADMINS:
+            user_data[user_id]["predictions_left"] -= 1
+            save_user_data(user_data)
+
+    except Exception as e:
+        logger.error(f"Erreur avec Cohere : {e}")
+        await update.message.reply_text("❌ Impossible d'obtenir une prédiction. Mais qui s'en soucie ? Le chaos continue !")
+
+# 📊 Commande /stats
+async def stats(update: Update, context: CallbackContext):
+    user_id = str(update.message.from_user.id)
+    user_data = get_or_create_user(user_id)
+    remaining = "∞" if int(user_id) in ADMINS else user_data[user_id]["predictions_left"]
+
+    await update.message.reply_text(f"🤡 Il te reste {remaining} prédictions aujourd’hui... Amuse-toi bien avant que tout ne s'effondre ! HAHAHA!")
+
+# 👑 Commande /admin (réservé aux admins)
+async def admin(update: Update, context: CallbackContext):
+    user_id = str(update.message.from_user.id)
+    if int(user_id) not in ADMINS:
+        await update.message.reply_text("❌ HAHAHA! Tu crois vraiment que tu peux contrôler le chaos ? Accès refusé. 😈 \n /̵͇̿̿/'̿'̿ ̿ ̿̿ ̿̿ ̿̿💥")
+        return
+    await update.message.reply_text("Bienvenue, maître du chaos ! Tes prédictions sont illimitées ! 🤡👑 HAHAHAHA! \n 「✔ ᵛᵉʳᶦᶠᶦᵉᵈ」")
+
+# 🃏 Commande /joke (blague du Joker)
 JOKER_JOKES = [
     "Pourquoi Batman n'aime pas les blagues ? Parce qu'il n'a pas de parents ! HAHAHA !",
     "Tu veux savoir pourquoi je souris toujours ? Parce que ça rend les gens nerveux...",
@@ -99,69 +166,22 @@ JOKER_JOKES = [
     "Tu veux un secret ? Les monstres ne se cachent pas sous ton lit… Ils dirigent la ville !",
     "Pourquoi j'aime les jeux vidéo ? Parce qu'on peut toujours recommencer après avoir tout détruit !",
     "On dit que la vengeance est un plat qui se mange froid… Moi, je préfère le servir avec une explosion !",
-    "Si la vie est un film, alors moi, je suis le méchant principal !"
+    "Si la vie est un film, alors moi, je suis le méchant principal !",
+    "( -_•)▄︻テحكـ━一💥"
 ]
 
-
-# 🚀 Commande /start
-async def start(update: Update, context: CallbackContext):
-    await update.message.reply_text(
-        f"🤡🚬Ah, tu es là... Enfin. Bienvenue {update.message.from_user.first_name} ! 🎉\n"
-        "Tu veux des prédictions ? rejoint moi dans mon equipe pour obtenir certaines offres spéciaux: \n https://t.me/FreeSurf237_Canal_INTECH \n https://t.me/+pmj78cr6mYBhMTM8\n"
-        "Pour predire: /predire [équipe1] vs [équipe2]."
-    )
-
-# 🔮 Commande /predire
-async def predict_score(update: Update, context: CallbackContext):
-    if len(context.args) < 1:
-        await update.message.reply_text("⚠️ Quoi, tu veux prédire sans même savoir de quoi tu parles ?! Utilise le format correct : /predire [équipe1] vs [équipe2] ! HAHAHA!")
-        return
-
-    match = " ".join(context.args)
-    if "vs" not in match:
-        await update.message.reply_text("⚠️ Le chaos ne suit pas de règles, mais même lui sait que tu dois utiliser le format : /predire [équipe1] vs [équipe2].")
-        return
-
-    team1, team2 = match.split(" vs ")
-    prompt = f"Imagine que tu es le Joker. Fais une estimation du score final en -100mots pour {team1} vs {team2} en tenant compte de leurs performances de cette annee 2025 dans le style du Joker."
-
-    try:
-        response = co.chat(model="command-r-plus-08-2024", messages=[{"role": "user", "content": prompt}])
-        prediction = response.message.content[0].text.strip()
-        await update.message.reply_text(f"😈 *Le Joker dit* : {prediction}", parse_mode="Markdown")
-    except Exception as e:
-        logger.error(f"Erreur avec Cohere : {e}")
-        await update.message.reply_text("❌ Impossible d'obtenir une prédiction. Mais qui s'en soucie ? Le chaos continue !")
-
-# 📊 Commande /stats
-async def stats(update: Update, context: CallbackContext):
-    user_id = str(update.message.from_user.id)
-    user_data = load_user_data()
-    remaining = user_data.get(user_id, {}).get("predictions_left", 15)
-    await update.message.reply_text(f"🤡 Il te reste {remaining} prédictions aujourd'hui... Comme si ça allait vraiment changer quelque chose. N'oublie pas, l'important, c'est de s'amuser avant que tout ne s'effondre ! HAHAHA!")
-
-# 👑 Commande /admin (réservé aux admins)
-async def admin(update: Update, context: CallbackContext):
-    user_id = update.message.from_user.id
-    if user_id not in ADMINS:
-        await update.message.reply_text("❌❌❌ HAHAHA! Tu crois vraiment que tu peux contrôler le chaos ? Accès refusé. 😈")
-        return
-    await update.message.reply_text("Bienvenue, Oui vous êtes un de mes chers administrateurs. Le chaos nous attends maître 🤡👑 HAHAHAHA!")
-
-# 🃏 Commande /joke (blague du Joker)
 async def joke(update: Update, context: CallbackContext):
-    joke = random.choice(JOKER_JOKES)
-    await update.message.reply_text(f"🤡 {joke}")
+    await update.message.reply_text(f"🤡 {random.choice(JOKER_JOKES)}")
 
-# 🆘 Commande /help (aide du Joker)
+# 🆘 Commande /help
 async def help(update: Update, context: CallbackContext):
     await update.message.reply_text(
-        "🤡📃Oh, tu veux de l'aide ? C'est amusant, parce que je ne suis pas là pour t'aider... mais bon, voici ce que tu peux faire :\n\n"
-        "/start - Bienvenue, cher visiteur !\n"
-        "/predire [équipe1] vs [équipe2] - Si tu veux des prédictions... \n"
-        "/stats - Voir combien de prédictions il te reste... mais tu sais, tu as 15 prédictions/jrs😈 !\n"
-        "/admin - Pour les élus, les contrôleurs du chaos... Si tu as ce privilège 👑 !\n"
-        "/joke - Une petite blague pour égayer ta journée... Si tu penses que tu peux encore rire après tout ça 🚬!"
+        "🤡📃Ah, tu veux de l'aide ? C'est amusant, parce que je ne suis pas là pour ça... mais bon :\n\n"
+        "/start - Présentation du chaos\n"
+        "/predire [équipe1] vs [équipe2] - Demande une prédiction 🎭\n"
+        "/stats - Voir ton nombre de prédictions restantes\n"
+        "/admin - Vérifier si tu es un maître du chaos 👑\n"
+        "/joke - Une blague pour te faire rire... ou pleurer 🚬!"
     )
 
 # 🚀 Application Flask
