@@ -98,7 +98,9 @@ async def predict_score(update: Update, context: CallbackContext):
     team1_info = get_team_info(team1)
     team2_info = get_team_info(team2)
 
-    prompt = f"Imagine que tu es le Joker. Fais une estimation du score final en -100mots avec des emojis que utilise le Joker pour {team1} vs {team2} en tenant compte de leurs performances de 2025 dans le style du Joker sans blaguer avec le score qui doit etre bien analyse."
+    prompt = f"Imagine que tu es le Joker. Fais une estimation du score final en -100mots avec des emojis que utilise le Joker pour {team1} vs {team2} 
+    en tenant compte de leurs performances de 2025 dans le style du Joker sans blaguer avec le score qui doit etre bien analyse.
+    voici leurs informations sous forme json utilise les: {team1}: {team1_info} et {team2}: {team2_info}"
 
     # Ajouter les informations d'équipe au prompt si disponibles
     if team1_info:
