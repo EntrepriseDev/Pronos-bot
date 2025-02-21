@@ -70,7 +70,7 @@ async def start(update: Update, context: CallbackContext):
 
 # 🔄 Fonction pour obtenir les informations sur les équipes depuis thesportbd
 def get_team_info(team_name):
-    url = f"https://thesportsbd.com/api/v1/json/searchteams.php?t={team_name}"  # Remplacez par l'URL correcte si nécessaire
+    url = f"https://www.thesportsdb.com/api/v1/json/3/searchteams.php?t={team_name}"  # Remplacez par l'URL correcte si nécessaire
     response = requests.get(url)
     
     if response.status_code == 200:
