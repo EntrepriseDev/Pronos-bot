@@ -120,7 +120,7 @@ async def predict_score(update: Update, context: CallbackContext):
     f"   - Derniers résultats de {team2}: [insérer résultats récents]\n"
     
     f"🎉 **Prédiction finale :**\n"
-    f"   - Score final estimé : {team1} {score_1} - {score_2} {team2} 🎉\n\n"
+    f"   - Score final estimé : {team1} score_1 - score_2 {team2} 🎉\n\n"
     
     f"🤡 N'oublie pas d'inclure une touche d'humour dans le style du Joker pour rendre tout ça encore plus divertissant !"
 )
