@@ -5,7 +5,7 @@ import requests
 import random
 import cohere
 from flask import Flask, request
-from telegram import Update
+from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Application, CommandHandler, CallbackContext
 
 # ⚠️ Clés API
@@ -47,16 +47,27 @@ def get_or_create_user(user_id):
     return user_data
 
 # 🚀 Commande /start
+# 🚀 Commande /start
 async def start(update: Update, context: CallbackContext):
+    keyboard = [
+        [
+            InlineKeyboardButton("Free Surf INTECH", url="https://t.me/FreeSurf237_Canal_INTECH"),
+            InlineKeyboardButton("1xbet Pronostic/ PariETGagner⚽️ 🔥", url="https://t.me/PronoScoreExact22"),
+        ],
+        [
+            InlineKeyboardButton("JK PRONO 🏆", url="https://t.me/+pmj78cr6mYBhMTM8"),
+        ],
+    ]
+
+    reply_markup = InlineKeyboardMarkup(keyboard)
+
     await update.message.reply_text(
         f"🤡🚬Ah, tu es là... Enfin. \n \n *Bienvenue ꧁𓊈𒆜{update.message.from_user.first_name}𒆜𓊉꧂* ! 🎉\n"
-        "Tu veux des prédictions ? \n Rejoins-moi dans mon équipe pour des offres spéciales : \n\n"
-        "[Free Surf INTECH](https://t.me/FreeSurf237_Canal_INTECH) \n"
-        "[1xbet Pronostic/ PariETGagner⚽️ 🔥](https://t.me/PronoScoreExact22) \n"
-        "[JK PRONO 🏆](https://t.me/+pmj78cr6mYBhMTM8) \n\n"
-        "👁️Pour prédire : /predire [équipe1] vs [équipe2].", 
+        "Tu veux des prédictions ? \n Rejoins-moi dans mon équipe pour des offres spéciales :",
+        reply_markup=reply_markup,
         parse_mode="Markdown"
     )
+
 
 # 🔮 Commande /predire
 async def predict_score(update: Update, context: CallbackContext):
