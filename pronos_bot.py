@@ -42,9 +42,13 @@ def save_user_data(user_data):
 def get_or_create_user(user_id):
     user_data = load_user_data()
     if user_id not in user_data:
-        user_data[user_id] = {"predictions_left": 15, "joined_groups": False}
+        user_data[user_id] = {
+            "predictions_left": 15,
+            "joined_groups": []  # Initialisation de la clé 'joined_groups'
+        }
         save_user_data(user_data)
     return user_data
+
 
 # 🆘 Fonction pour vérifier si l'utilisateur a rejoint les groupes
 async def check_joined_groups(update: Update, user_data):
