@@ -47,7 +47,6 @@ def get_or_create_user(user_id):
     return user_data
 
 # 🚀 Commande /start
-# 🚀 Commande /start
 async def start(update: Update, context: CallbackContext):
     keyboard = [
         [
@@ -69,6 +68,17 @@ async def start(update: Update, context: CallbackContext):
     )
 
 
+# 🔄 Fonction pour obtenir les informations sur les équipes depuis thesportbd
+def get_team_info(team_name):
+    url = f"https://thesportsbd.com/api/v1/json/searchteams.php?t={team_name}"  # Remplacez par l'URL correcte si nécessaire
+    response = requests.get(url)
+    
+    if response.status_code == 200:
+        return response.json()  # Supposons que l'API renvoie les données au format JSON
+    else:
+        logger.error(f"Erreur lors de la récupération des informations de l'équipe {team_name}: {response.status_code}")
+        return None
+
 # 🔮 Commande /predire
 async def predict_score(update: Update, context: CallbackContext):
     user_id = str(update.message.from_user.id)
@@ -83,7 +93,18 @@ async def predict_score(update: Update, context: CallbackContext):
         return
 
     team1, team2 = context.args[0], context.args[2]
-    prompt = f"Imagine que tu es le Joker. Fais une estimation du score final en -100mots avec des emojis que utilise le Joker pour {team1} vs {team2} en tenant compte de leurs performances de 2025 dans le style du Joker sans blaguer avec le score qui doit etre bien analyse"
+
+    # Récupérer les informations sur les équipes
+    team1_info = get_team_info(team1)
+    team2_info = get_team_info(team2)
+
+    prompt = f"Imagine que tu es le Joker. Fais une estimation du score final en -100mots avec des emojis que utilise le Joker pour {team1} vs {team2} en tenant compte de leurs performances de 2025 dans le style du Joker sans blaguer avec le score qui doit etre bien analyse."
+
+    # Ajouter les informations d'équipe au prompt si disponibles
+    if team1_info:
+        prompt += f"\n\n Informations sur {team1}: {team1_info}"
+    if team2_info:
+        prompt += f"\n\n Informations sur {team2}: {team2_info}"
 
     try:
         response = co.chat(model="command-r-plus-08-2024", messages=[{"role": "user", "content": prompt}])
@@ -98,7 +119,6 @@ async def predict_score(update: Update, context: CallbackContext):
     except Exception as e:
         logger.error(f"Erreur avec Cohere : {e}")
         await update.message.reply_text("❌ Impossible d'obtenir une prédiction. Mais qui s'en soucie ? Le chaos continue !")
-
 # 📊 Commande /stats
 async def stats(update: Update, context: CallbackContext):
     user_id = str(update.message.from_user.id)
