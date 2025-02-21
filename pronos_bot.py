@@ -61,7 +61,7 @@ async def start(update: Update, context: CallbackContext):
     reply_markup = InlineKeyboardMarkup(keyboard)
 
     await update.message.reply_text(
-        f"🤡🚬Ah, tu es là... Enfin. \n \n *Bienvenue ꧁𓊈𒆜{update.message.from_user.first_name}𒆜𓊉꧂* ! 🎉\n"
+        f"🤡🚬Ah, tu es là... Enfin. \n \n *Bienvenue ꧁𓊈𒆜{update.message.from_user.first_name}𒆜𓊉꧂* ! 🎉\n\n"
         "Tu veux des prédictions ? \n Rejoins-moi dans mon équipe pour des offres spéciales :",
         reply_markup=reply_markup,
         parse_mode="Markdown"
@@ -89,7 +89,7 @@ async def predict_score(update: Update, context: CallbackContext):
         return
 
     if len(context.args) < 3 or context.args[1].lower() != "vs":
-        await update.message.reply_text("🎭 Oh là là ! On dirait que tu as raté le coche, mon petit. 🤡 Tu devrais utiliser : /predire [équipe1] vs [équipe2]. \n \n 🚬C'est comme une blague mal placée, ça ne marche pas sans le bon timing !")
+        await update.message.reply_text("🎭 Oh là là ! On dirait que tu as raté le coche, mon petit. 🤡 Tu devrais utiliser : /predire [équipe1] vs [équipe2].\n *Exemple:* PSG vs ManchesterUnited \n \n 🚬C'est comme une blague mal placée, ça ne marche pas sans le bon timing !")
         return
 
     team1, team2 = context.args[0], context.args[2]
