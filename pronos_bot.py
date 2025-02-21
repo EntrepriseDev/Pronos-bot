@@ -77,7 +77,7 @@ def get_team_info(team_name):
         return response.json()  # Supposons que l'API renvoie les données au format JSON
     else:
         logger.error(f"Erreur lors de la récupération des informations de l'équipe {team_name}: {response.status_code}")
-        return None
+        return "Fait des recherches pousser des performances 2025 de cette equipe"
 
 # 🔮 Commande /predire
 async def predict_score(update: Update, context: CallbackContext):
