@@ -85,7 +85,7 @@ async def predict_score(update: Update, context: CallbackContext):
     user_data = get_or_create_user(user_id)
 
     if int(user_id) not in ADMINS and user_data[user_id]["predictions_left"] <= 0:
-        await update.message.reply_text("❌ Plus de prédictions pour aujourd’hui, petit ᶠᶸᶜᵏᵧₒᵤ! 😂 \n Reviens demain, ou deviens admin... HAHAHA!")
+        await update.message.reply_text("❌ Plus de prédictions pour aujourd'hui, petit ᶠᶸᶜᵏᵧₒᵤ! 😂 \n Reviens demain, ou deviens admin... HAHAHA!")
         return
 
     if len(context.args) < 3 or context.args[1].lower() != "vs":
@@ -99,33 +99,38 @@ async def predict_score(update: Update, context: CallbackContext):
     team2_info = get_team_info(team2)
 
     prompt = (
-    f"🎭 Imagine que tu es le Joker. Crée un coupon -160mots de pronostics complet pour le match entre ({team1}) et ({team2}). "
-    f"Fais une estimation du score final et présente les informations sous la forme suivante :\n\n"
-    
-    f"🔢 **Nombres de buts :**\n"
-    f"🔹 {team1}: [nombre de buts estimé] ⚽️\n"
-    f"🔹 {team2}: [nombre de buts estimé] ⚽️\n\n"
-    
-    f"💥 **Moins de :** [*nombre de buts*] (Explique pourquoi le score sera inférieur à ce chiffre)\n\n"
-    
-    f"🧐 **Analyse des performances :**\n"
-    f"🔹 Analyse les performances des deux équipes en 2025 :\n"
-    f"   - Points forts de {team1} : [insérer points forts sans donner le nom des joueurs]\n"
-    f"   - Points faibles de {team1} : [insérer points faibles sans donner le nom des joueurs]\n"
-    f"   - Points forts de {team2} : [insérer points forts sans donner le nom des joueurs]\n"
-    f"   - Points faibles de {team2} : [insérer points faibles sans donner le nom des joueurs]\n\n"
-    
-    f"🎉 **Prédiction finale :**\n"
-    f"   - Score final estimé : {team1} score_1 - score_2 {team2} 🎉\n\n"
-    
-    f"🤡 N'oublie pas d'inclure une touche d'humour dans le style du Joker pour rendre tout ça encore plus divertissant !", 
-)
+        f"🎭 Imagine que tu es le Joker. Crée un coupon -160mots de pronostics complet pour le match entre ({team1}) et ({team2}). "
+        f"Fais une estimation du score final et présente les informations sous la forme suivante :\n\n"
+        
+        f"🔢 **Nombres de buts :**\n"
+        f"🔹 {team1}: [nombre de buts estimé] ⚽️\n"
+        f"🔹 {team2}: [nombre de buts estimé] ⚽️\n\n"
+        
+        f"💥 **Moins de :** [*nombre de buts*] (Explique pourquoi le score sera inférieur à ce chiffre)\n\n"
+        
+        f"🧐 **Analyse des performances :**\n"
+        f"🔹 Analyse les performances des deux équipes en 2025 :\n"
+        f"   - Points forts de {team1} : [insérer points forts sans donner le nom des joueurs]\n"
+        f"   - Points faibles de {team1} : [insérer points faibles sans donner le nom des joueurs]\n"
+        f"   - Points forts de {team2} : [insérer points forts sans donner le nom des joueurs]\n"
+        f"   - Points faibles de {team2} : [insérer points faibles sans donner le nom des joueurs]\n\n"
+        
+        f"🎉 **Prédiction finale :**\n"
+        f"   - Score final estimé : {team1} score_1 - score_2 {team2} 🎉\n\n"
+        
+        f"🤡 N'oublie pas d'inclure une touche d'humour dans le style du Joker pour rendre tout ça encore plus divertissant!"
+    )
 
-    # Ajouter les informations d'équipe au prompt si disponibles
-    if team1_info:
-        prompt += f"\n\n Informations sur {team1}: {team1_info}"
-    if team2_info:
-        prompt += f"\n\n Informations sur {team2}: {team2_info}"
+    # Ajouter les informations d'équipe au prompt correctement, en vérifiant le type
+    if isinstance(team1_info, dict):
+        prompt += f"\n\nInformations sur {team1}: {json.dumps(team1_info)}"
+    elif isinstance(team1_info, str):
+        prompt += f"\n\nInformations sur {team1}: {team1_info}"
+
+    if isinstance(team2_info, dict):
+        prompt += f"\n\nInformations sur {team2}: {json.dumps(team2_info)}"
+    elif isinstance(team2_info, str):
+        prompt += f"\n\nInformations sur {team2}: {team2_info}"
 
     try:
         response = co.chat(model="command-r-plus-08-2024", messages=[{"role": "user", "content": prompt}])
@@ -133,13 +138,14 @@ async def predict_score(update: Update, context: CallbackContext):
         await update.message.reply_text(f"[Rejoignez la communauté du Joker 🎭](https://t.me/the_jokers_community) \n \n *Le Joker dit* 🃏: {prediction}", parse_mode="Markdown")
 
         # Réduction du nombre de pronostics restants pour les non-admins
-        if user_id not in ADMINS:
+        if int(user_id) not in ADMINS:
             user_data[user_id]["predictions_left"] -= 1
             save_user_data(user_data)
 
     except Exception as e:
         logger.error(f"Erreur avec Cohere : {e}")
         await update.message.reply_text("❌ Impossible d'obtenir une prédiction. Mais qui s'en soucie ? Le chaos continue !")
+        
 # 📊 Commande /stats
 async def stats(update: Update, context: CallbackContext):
     user_id = str(update.message.from_user.id)
