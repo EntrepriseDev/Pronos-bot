@@ -89,7 +89,7 @@ async def predict_score(update: Update, context: CallbackContext):
         return
 
     if len(context.args) < 3 or context.args[1].lower() != "vs":
-        await update.message.reply_text("🎭 Oh là là ! On dirait que tu as raté le coche, mon petit. 🤡 Tu devrais utiliser : /predire [équipe1] vs [équipe2].\n *Exemple:* PSG vs ManchesterUnited \n \n 🚬C'est comme une blague mal placée, ça ne marche pas sans le bon timing !")
+        await update.message.reply_text("🎭 Oh là là ! On dirait que tu as raté le coche, mon petit. 🤡 Tu devrais utiliser : /predire [équipe1] vs [équipe2].\n\n *Exemple:* PSG vs ManchesterUnited \n \n 🚬 _C'est comme une blague mal placée, ça ne marche pas sans le bon timing !_", parse_mode="Markdown")
         return
 
     team1, team2 = context.args[0], context.args[2]
