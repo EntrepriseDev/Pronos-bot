@@ -62,7 +62,7 @@ async def start(update: Update, context: CallbackContext):
 
     await update.message.reply_text(
         f"🤡🚬Ah, tu es là... Enfin. \n \n *Bienvenue ꧁𓊈𒆜{update.message.from_user.first_name}𒆜𓊉꧂* ! 🎉\n\n"
-        "Tu veux des prédictions ? \n Rejoins-moi dans mon équipe pour des offres spéciales :",
+        "Tu veux des prédictions 🔮?Tape /help (pour plus d'aide) \n Rejoins mon équipe pour de superdes offres façon *Joker*:",
         reply_markup=reply_markup,
         parse_mode="Markdown"
     )
